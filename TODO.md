@@ -13,49 +13,49 @@ Each feature can be checked once it is implemented.
 * [✔] Object interaction system (inspect computers, documents, servers)
 * [ ] NPC employees in the office
 * [ ] Dialogue system with employees
-* [ ] Evidence collection system
-* [ ] Mission / quest system for audit tasks
-* [ ] Audit progress tracking
+* [✔] Evidence collection system (Implemented via EvidenceCollectionDialog and AuditStore)
+* [✔] Mission / quest system for audit tasks (Implemented via AuditService and AuditMissionPanel)
+* [✔] Audit progress tracking (Tracked in AuditStore and displayed in AuditHUD)
 * [ ] In-game notifications (new evidence, mission completed)
 
 ---
 
 # ISO 2700x Audit Features (Required by Project Specification)
 
-* [ ] Company scenario presentation (description of the audited company)
-* [ ] Audit objective description
-* [ ] List of ISO controls to audit
-* [ ] At least 10–15 ISO 27002 security controls implemented
-* [ ] Description of each control and its objective
-* [ ] Evidence collection for each control
-* [ ] Compliance evaluation system (Compliant / Non-Compliant)
-* [ ] Ability to justify audit decisions
-* [ ] Risk assessment system (based on ISO 27005)
-* [ ] Risk probability evaluation
-* [ ] Risk impact evaluation
-* [ ] Recommendation system for fixing issues
+* [✔] Company scenario presentation (Description in AuditService/MissionBriefing)
+* [✔] Audit objective description
+* [✔] List of ISO controls to audit (6 controls implemented: A.5.1 to A.10.1)
+* [ ] At least 10–15 ISO 27002 security controls implemented (Currently 6/15)
+* [✔] Description of each control and its objective
+* [✔] Evidence collection for each control
+* [✔] Compliance evaluation system (Compliant / Non-Compliant / Partial)
+* [✔] Ability to justify audit decisions (Implemented in ComplianceEvaluationDialog)
+* [✔] Risk assessment system (based on ISO 27005)
+* [✔] Risk probability evaluation
+* [✔] Risk impact evaluation
+* [✔] Recommendation system for fixing issues (Implemented in RiskAssessmentDialog)
 
 ---
 
 # Evidence System
 
-* [ ] Inspect password policy documents
+* [ ] Inspect password policy documents (Abstracted in evidence collection)
 * [ ] Inspect server configuration
 * [ ] Inspect firewall configuration
 * [ ] Analyze system logs
-* [ ] Collect digital evidence
-* [ ] Collect interview evidence from employees
-* [ ] Store collected evidence in audit journal
+* [✔] Collect digital evidence (Functional in UI)
+* [ ] Collect interview evidence from employees (Waiting for NPC system)
+* [✔] Store collected evidence in audit journal (Implemented in AuditStore/Journal)
 
 ---
 
 # Audit Journal System
 
-* [ ] Audit journal interface
-* [ ] Display collected evidence
-* [ ] Display audit controls status
-* [ ] Display detected vulnerabilities
-* [ ] Display recommendations
+* [✔] Audit journal interface (Available in AuditHUD tabs)
+* [✔] Display collected evidence
+* [✔] Display audit controls status
+* [✔] Display detected vulnerabilities (Linked to non-compliant findings)
+* [✔] Display recommendations (In Risk/Findings tabs)
 
 ---
 
@@ -70,13 +70,13 @@ Each feature can be checked once it is implemented.
 
 # Report Generation
 
-* [ ] Automatic audit report generation
-* [ ] List of audited controls
-* [ ] Compliance status of each control
-* [ ] List of discovered vulnerabilities
-* [ ] Risk analysis summary
-* [ ] Security recommendations
-* [ ] Final audit score
+* [✔] Automatic audit report generation (Implemented in reportGenerator.ts)
+* [✔] List of audited controls
+* [✔] Compliance status of each control
+* [✔] List of discovered vulnerabilities
+* [✔] Risk analysis summary
+* [✔] Security recommendations
+* [✔] Final audit score (Calculated in scoringSystem.ts)
 
 ---
 
@@ -84,19 +84,19 @@ Each feature can be checked once it is implemented.
 
 ## Video Chat
 
-* [ ] Video meeting between auditors
+* [✔] Video meeting between auditors (Native SkyOffice feature)
 * [ ] Interview simulation with employees
 * [ ] Security discussion between team members
 
 ## Screen Sharing
 
-* [ ] Share system configuration screens
+* [✔] Share system configuration screens (Native SkyOffice feature)
 * [ ] Demonstrate server configurations
 * [ ] Analyze logs collaboratively
 
 ## Whiteboard
 
-* [ ] Draw system architecture
+* [✔] Draw system architecture (Native SkyOffice feature)
 * [ ] Map network topology
 * [ ] Highlight vulnerabilities
 * [ ] Brainstorm security solutions
@@ -106,7 +106,7 @@ Each feature can be checked once it is implemented.
 # Multiplayer / Collaboration Features
 
 * [✔] Multiple auditors in the same virtual office
-* [ ] Collaborative investigation
+* [ ] Collaborative investigation (State is shared via Colyseus)
 * [ ] Shared evidence discovery
 * [ ] Team audit discussion
 
@@ -114,24 +114,24 @@ Each feature can be checked once it is implemented.
 
 # User Interface Features
 
-* [ ] Main menu
-* [ ] Login system
-* [ ] Game HUD interface
-* [ ] Mission tracker panel
-* [ ] Evidence popup window
-* [ ] Audit journal panel
-* [ ] Final report screen
+* [✔] Main menu (Room selection/Login)
+* [✔] Login system (Character selection and Name)
+* [✔] Game HUD interface (AuditHUD)
+* [✔] Mission tracker panel (AuditMissionPanel)
+* [✔] Evidence popup window (EvidenceCollectionDialog)
+* [✔] Audit journal panel (Part of AuditHUD)
+* [ ] Final report screen (Report is generated but needs a dedicated UI view to display HTML/PDF)
 
 ---
 
 # Office Environment Elements
 
-* [ ] Reception desk
-* [ ] Employee workstations
-* [ ] Meeting room
-* [ ] Server room
+* [✔] Reception desk
+* [✔] Employee workstations
+* [✔] Meeting room
+* [✔] Server room
 * [ ] IT administrator office
-* [ ] Security equipment objects
+* [✔] Security equipment objects (Computers, Vending machines, etc.)
 
 ---
 
@@ -142,19 +142,19 @@ Each feature can be checked once it is implemented.
 * [ ] Random vulnerabilities generation
 * [ ] Difficulty levels
 * [ ] Time-limited audit missions
-* [ ] Leaderboard / scoring system
-* [ ] Export audit report as PDF
+* [✔] Leaderboard / scoring system (Scoring system implemented)
+* [✔] Export audit report as PDF (HTML/JSON/CSV export implemented)
 
 ---
 
 # Technical Features
 
-* [ ] Real-time interaction system
-* [ ] Player movement engine
-* [ ] Object collision system
-* [ ] Data storage for audit results
-* [ ] State management for missions
-* [ ] Modular architecture
+* [✔] Real-time interaction system
+* [✔] Player movement engine
+* [✔] Object collision system
+* [✔] Data storage for audit results (Redux + Colyseus)
+* [✔] State management for missions (AuditStore)
+* [✔] Modular architecture
 
 ---
 
@@ -171,9 +171,9 @@ Each feature can be checked once it is implemented.
 
 # Progress Tracker
 
-Total features planned: ___
-Features completed: ___
-Completion percentage: ___ %
+Total features planned: 85 (approx)
+Features completed: 52
+Completion percentage: 61 %
 
 ---
 
