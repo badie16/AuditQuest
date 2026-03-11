@@ -70,8 +70,8 @@ You'll need the following installed:
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/badie16/audit-quest-system.git
-cd audit-quest-system
+git clone https://github.com/badie16/AuditQuest.git
+cd AuditQuest
 ```
 
 **Start the Server:**
@@ -92,7 +92,7 @@ Open your browser and navigate to `http://localhost:5173` to access the Audit Qu
 ## Project Structure
 
 ```
-audit-quest-system/
+AuditQuest/
 ├── server/              # Colyseus game server
 │   ├── rooms/          # Room and state management
 │   │   ├── schema/     # Colyseus schema definitions (including AuditState.ts)
