@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../stores'
 import { getPerformanceGrade, getAuditSummary } from '../utils/scoringSystem'
+import { BackgroundMode } from '../../../types/BackgroundMode'
 import './AuditHUD.scss'
 
 interface AuditHUDProps {
@@ -16,6 +17,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
   )
 
   const auditState = useSelector((state: RootState) => state.audit)
+  const backgroundMode = useSelector((state: RootState) => state.user.backgroundMode)
 
   // Sécurisation : toujours fournir des tableaux par défaut
   const activeMissions = auditState.activeMissions || []
@@ -36,8 +38,10 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
 
   if (!isOpen) return null
 
+  const themeClass = backgroundMode === BackgroundMode.DAY ? 'theme-day' : 'theme-night'
+
   return (
-    <div className="audit-hud">
+    <div className={`audit-hud ${themeClass}`}>
       <div className="audit-hud__container">
         <div className="audit-hud__header">
           <h1 className="audit-hud__title">Audit Dashboard</h1>
@@ -77,56 +81,56 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
           {activeTab === 'overview' && (
             <div className="audit-overview">
               <div className="score-section">
-                <div className="score-display" style={{ borderLeftColor: grade.color }}>
+                <div className="score-display">
                   <div className="score-number">{auditState.auditScore || 0}</div>
-                  <div className="score-grade">{grade.grade}</div>
+                  <div className="score-grade" style={{ color: grade.color }}>{grade.grade}</div>
                   <div className="score-description">{grade.description}</div>
                 </div>
               </div>
 
               <div className="progress-section">
-                <h3>Progress</h3>
+                <h3>Audit Progress</h3>
                 <div className="progress-bar">
                   <div
                     className="progress-fill"
                     style={{ width: `${auditState.progressPercentage || 0}%` }}
                   >
-                    {auditState.progressPercentage || 0}%
+                    <span style={{marginLeft:'30px',display:"block"}}>{auditState.progressPercentage || 0}%</span>
                   </div>
                 </div>
               </div>
 
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-label">Total Controls</div>
+                  <div className="stat-label">Total</div>
                   <div className="stat-value">{summary.totalMissions || 0}</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-label">Completed</div>
-                  <div className="stat-value" style={{ color: '#4CAF50' }}>
+                  <div className="stat-label">Done</div>
+                  <div className="stat-value done">
                     {summary.completedMissions || 0}
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-label">Compliant</div>
-                  <div className="stat-value" style={{ color: '#4CAF50' }}>
+                  <div className="stat-label">Pass</div>
+                  <div className="stat-value pass">
                     {summary.compliantCount || 0}
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-label">Non-Compliant</div>
-                  <div className="stat-value" style={{ color: '#F44336' }}>
+                  <div className="stat-label">Fail</div>
+                  <div className="stat-value fail">
                     {summary.nonCompliantCount || 0}
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-label">High Risk</div>
-                  <div className="stat-value" style={{ color: '#F44336' }}>
+                  <div className="stat-label">Risks</div>
+                  <div className="stat-value risk">
                     {summary.highRiskCount || 0}
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-label">Evidence Collected</div>
+                  <div className="stat-label">Evid.</div>
                   <div className="stat-value">{summary.totalEvidence || 0}</div>
                 </div>
               </div>

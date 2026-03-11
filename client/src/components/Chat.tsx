@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import styled from 'styled-components'
 import Box from '@mui/material/Box'
-import Fab from '@mui/material/Fab'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 import InputBase from '@mui/material/InputBase'
@@ -17,6 +16,7 @@ import Game from '../scenes/Game'
 import { getColorByString } from '../util'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { MessageType, setFocused, setShowChat } from '../stores/ChatStore'
+import { BackgroundMode } from '../../../types/BackgroundMode'
 
 const Backdrop = styled.div`
   position: fixed;
@@ -26,139 +26,87 @@ const Backdrop = styled.div`
   width: 500px;
   max-height: 50%;
   max-width: 100%;
+  z-index: 1000;
 `
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ $isDay: boolean }>`
   position: relative;
   height: 100%;
   padding: 16px;
   display: flex;
   flex-direction: column;
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: ${props => props.$isDay ? '#fff' : '#2c2c2c'};
+    border: 4px solid ${props => props.$isDay ? '#2c3e50' : '#eee'};
+    box-shadow: 8px 8px 0px #000;
+  }
 `
 
-const FabWrapper = styled.div`
-  margin-top: auto;
-`
-
-const ChatHeader = styled.div`
+const ChatHeader = styled.div<{ $isDay: boolean }>`
   position: relative;
-  height: 35px;
-  background: #000000a7;
-  border-radius: 10px 10px 0px 0px;
+  height: 40px;
+  background: ${props => props.$isDay ? '#2c3e50' : '#1a1a1a'};
+  border-bottom: 4px solid ${props => props.$isDay ? '#2c3e50' : '#eee'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   h3 {
-    color: #fff;
-    margin: 7px;
-    font-size: 17px;
-    text-align: center;
+    color: #42eacb;
+    margin: 0;
+    font-size: 14px;
+    font-family: 'Press Start 2P', cursive;
+    text-transform: uppercase;
   }
 
   .close {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    color: #eee;
   }
 `
 
-const ChatBox = styled(Box)`
+const ChatBox = styled(Box)<{ $isDay: boolean }>`
   height: 100%;
   width: 100%;
   overflow: auto;
-  background: #2c2c2c;
-  border: 1px solid #00000029;
-`
+  background: ${props => props.$isDay ? '#f0f4f8' : '#2c2c2c'};
+  padding: 5px;
 
-const MessageWrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  padding: 0px 2px;
-
-  p {
-    margin: 3px;
-    text-shadow: 0.3px 0.3px black;
-    font-size: 15px;
-    font-weight: bold;
-    line-height: 1.4;
-    overflow-wrap: anywhere;
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
   }
-
-  span {
-    color: white;
-    font-weight: normal;
+  &::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
   }
-
-  .notification {
-    color: grey;
-    font-weight: normal;
-  }
-
-  :hover {
-    background: #3a3a3a;
+  &::-webkit-scrollbar-thumb {
+    background: #42eacb;
   }
 `
 
-const InputWrapper = styled.form`
-  box-shadow: 10px 10px 10px #00000018;
-  border: 1px solid #42eacb;
-  border-radius: 0px 0px 10px 10px;
+const InputWrapper = styled.form<{ $isDay: boolean }>`
+  border-top: 4px solid ${props => props.$isDay ? '#2c3e50' : '#eee'};
   display: flex;
   flex-direction: row;
-  background: linear-gradient(180deg, #000000c1, #242424c0);
+  background: ${props => props.$isDay ? '#fff' : '#1a1a1a'};
+  padding: 5px;
 `
 
 const InputTextField = styled(InputBase)`
-  border-radius: 0px 0px 10px 10px;
+  font-family: 'Press Start 2P', cursive !important;
+  font-size: 10px !important;
   input {
-    padding: 5px;
+    padding: 10px;
+    color: inherit;
   }
 `
-
-const EmojiPickerWrapper = styled.div`
-  position: absolute;
-  bottom: 54px;
-  right: 16px;
-`
-
-const dateFormatter = new Intl.DateTimeFormat('en', {
-  timeStyle: 'short',
-  dateStyle: 'short',
-})
-
-const Message = ({ chatMessage, messageType }) => {
-  const [tooltipOpen, setTooltipOpen] = useState(false)
-
-  return (
-    <MessageWrapper
-      onMouseEnter={() => {
-        setTooltipOpen(true)
-      }}
-      onMouseLeave={() => {
-        setTooltipOpen(false)
-      }}
-    >
-      <Tooltip
-        open={tooltipOpen}
-        title={dateFormatter.format(chatMessage.createdAt)}
-        placement="right"
-        arrow
-      >
-        {messageType === MessageType.REGULAR_MESSAGE ? (
-          <p
-            style={{
-              color: getColorByString(chatMessage.author),
-            }}
-          >
-            {chatMessage.author}: <span>{chatMessage.content}</span>
-          </p>
-        ) : (
-          <p className="notification">
-            {chatMessage.author} {chatMessage.content}
-          </p>
-        )}
-      </Tooltip>
-    </MessageWrapper>
-  )
-}
 
 export default function Chat() {
   const [inputValue, setInputValue] = useState('')
@@ -169,6 +117,8 @@ export default function Chat() {
   const chatMessages = useAppSelector((state) => state.chat.chatMessages)
   const focused = useAppSelector((state) => state.chat.focused)
   const showChat = useAppSelector((state) => state.chat.showChat)
+  const backgroundMode = useAppSelector((state) => state.user.backgroundMode)
+  const isDay = backgroundMode === BackgroundMode.DAY
   const dispatch = useAppDispatch()
   const game = phaserGame.scene.keys.game as Game
 
@@ -222,10 +172,10 @@ export default function Chat() {
 
   return (
     <Backdrop>
-      <Wrapper>
+      <Wrapper $isDay={isDay}>
         {showChat ? (
-          <>
-            <ChatHeader>
+          <div className="chat-container">
+            <ChatHeader $isDay={isDay}>
               <h3>Chat</h3>
               <IconButton
                 aria-label="close dialog"
@@ -233,10 +183,10 @@ export default function Chat() {
                 onClick={() => dispatch(setShowChat(false))}
                 size="small"
               >
-                <CloseIcon />
+                <CloseIcon fontSize="small" />
               </IconButton>
             </ChatHeader>
-            <ChatBox>
+            <ChatBox $isDay={isDay}>
               {chatMessages.map(({ messageType, chatMessage }, index) => (
                 <Message chatMessage={chatMessage} messageType={messageType} key={index} />
               ))}
@@ -244,7 +194,7 @@ export default function Chat() {
               {showEmojiPicker && (
                 <EmojiPickerWrapper>
                   <Picker
-                    theme="dark"
+                    theme={isDay ? 'light' : 'dark'}
                     showSkinTones={false}
                     showPreview={false}
                     onSelect={(emoji) => {
@@ -257,12 +207,12 @@ export default function Chat() {
                 </EmojiPickerWrapper>
               )}
             </ChatBox>
-            <InputWrapper onSubmit={handleSubmit}>
+            <InputWrapper $isDay={isDay} onSubmit={handleSubmit}>
               <InputTextField
                 inputRef={inputRef}
                 autoFocus={focused}
                 fullWidth
-                placeholder="Press Enter to chat"
+                placeholder="Type message..."
                 value={inputValue}
                 onKeyDown={handleKeyDown}
                 onChange={handleChange}
@@ -281,19 +231,21 @@ export default function Chat() {
                 <InsertEmoticonIcon />
               </IconButton>
             </InputWrapper>
-          </>
+          </div>
         ) : (
           <FabWrapper>
-            <Fab
-              color="secondary"
-              aria-label="showChat"
-              onClick={() => {
-                dispatch(setShowChat(true))
-                dispatch(setFocused(true))
-              }}
-            >
-              <ChatBubbleOutlineIcon />
-            </Fab>
+            <Tooltip title="Open Chat" placement="right">
+              <PixelButton
+                $isDay={isDay}
+                aria-label="showChat"
+                onClick={() => {
+                  dispatch(setShowChat(true))
+                  dispatch(setFocused(true))
+                }}
+              >
+                <ChatBubbleOutlineIcon />
+              </PixelButton>
+            </Tooltip>
           </FabWrapper>
         )}
       </Wrapper>
