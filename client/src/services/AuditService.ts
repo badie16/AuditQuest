@@ -20,7 +20,7 @@ export const initializeAuditSession = () => {
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
       auditScope: 'Information Security Management System',
       auditTeam: [],
-      organization: 'AuditQuest Corp',
+      organization: 'Alhpa Corp', 
     })
   )
 
