@@ -21,8 +21,8 @@ const Backdrop = styled.div`
 
 const HudButton = styled.button`
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  top: 20px;
+  left: 20px;
   z-index: 1000;
   padding: 10px 15px;
   background-color: #1976d2;
