@@ -1,0 +1,319 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+  AuditMission,
+  Evidence,
+  ComplianceFinding,
+  RiskAssessment,
+  JournalEntry,
+  Notification,
+  AuditState,
+  AuditStatus,
+} from '../../../types/AuditTypes'
+
+const initialState: AuditState = {
+  sessionId: '',
+  currentMission: undefined,
+  activeMissions: [],
+  completedMissions: [],
+  collectedEvidence: [],
+  findings: [],
+  riskAssessments: [],
+  auditScore: 100,
+  progressPercentage: 0,
+  auditJournal: [],
+  notifications: [],
+  status: 'pending',
+  startedAt: 0,
+  hudOpen: true,
+  activeTab: 'overview',
+}
+
+const auditSlice = createSlice({
+  name: 'audit',
+  initialState,
+  reducers: {
+    // Session management
+    initializeAuditSession: (
+      state,
+      action: PayloadAction<{ sessionId: string; missions: AuditMission[] }>
+    ) => {
+      state.sessionId = action.payload.sessionId
+      state.activeMissions = action.payload.missions || []
+      state.status = 'in-progress'
+      state.startedAt = Date.now()
+      state.auditScore = 100
+      state.progressPercentage = 0
+    },
+
+    completeAuditSession: (state) => {
+      state.status = 'completed'
+      state.completedAt = Date.now()
+    },
+
+    // Mission management
+    setCurrentMission: (state, action: PayloadAction<AuditMission | undefined>) => {
+      state.currentMission = action.payload
+      if (action.payload) {
+        state.activeMissions =
+          state.activeMissions?.filter((m) => m.id !== action.payload?.id) || []
+        state.activeMissions.unshift(action.payload)
+      }
+    },
+
+    startMission: (state, action: PayloadAction<AuditMission>) => {
+      const mission = action.payload
+      if (!mission) return
+
+      mission.status = 'in-progress'
+      state.currentMission = mission
+      state.activeMissions = state.activeMissions?.filter((m) => m.id !== mission.id) || []
+      state.activeMissions.unshift(mission)
+
+      state.auditJournal = state.auditJournal || []
+      state.auditJournal.push({
+        id: `entry_${Date.now()}`,
+        timestamp: Date.now(),
+        auditorId: 'current_auditor',
+        action: `Started audit mission: ${mission.name}`,
+        details: `ISO ${mission.isoControl}`,
+        missionId: mission.id,
+        type: 'mission_started',
+      })
+    },
+
+    completeMission: (state, action: PayloadAction<AuditMission>) => {
+      const mission = action.payload
+      if (!mission) return
+
+      mission.status = 'completed'
+      mission.completedAt = Date.now()
+
+      state.completedMissions = state.completedMissions || []
+      state.completedMissions.push(mission)
+
+      state.activeMissions = state.activeMissions?.filter((m) => m.id !== mission.id) || []
+      state.currentMission = undefined
+
+      state.auditJournal = state.auditJournal || []
+      state.auditJournal.push({
+        id: `entry_${Date.now()}`,
+        timestamp: Date.now(),
+        auditorId: 'current_auditor',
+        action: `Completed audit mission: ${mission.name}`,
+        details: `Compliance Status: ${mission.compliance}`,
+        missionId: mission.id,
+        type: 'mission_completed',
+      })
+
+      const totalMissions =
+        (state.completedMissions.length || 0) + (state.activeMissions?.length || 0)
+      state.progressPercentage =
+        totalMissions > 0 ? Math.round((state.completedMissions.length / totalMissions) * 100) : 0
+    },
+
+    updateMissionStatus: (
+      state,
+      action: PayloadAction<{ missionId: string; status: AuditStatus }>
+    ) => {
+      const mission = state.activeMissions?.find((m) => m.id === action.payload.missionId)
+      if (mission) {
+        mission.status = action.payload.status
+      }
+    },
+
+    // Evidence management
+    addEvidence: (state, action: PayloadAction<Evidence>) => {
+      const evidence = action.payload
+      if (!evidence) return
+
+      state.collectedEvidence = state.collectedEvidence || []
+      state.collectedEvidence.push(evidence)
+
+      const mission = state.activeMissions?.find((m) => m.id === evidence.missionId)
+      if (mission) {
+        mission.collectedEvidence = mission.collectedEvidence || []
+        mission.collectedEvidence.push(evidence.id)
+      }
+
+      state.auditJournal = state.auditJournal || []
+      state.auditJournal.push({
+        id: `entry_${Date.now()}`,
+        timestamp: Date.now(),
+        auditorId: evidence.auditorId,
+        action: 'Collected evidence',
+        details: `${evidence.type}: ${evidence.description}`,
+        missionId: evidence.missionId,
+        type: 'evidence_collected',
+      })
+
+      addNotification(state, {
+        id: `notif_${Date.now()}`,
+        timestamp: Date.now(),
+        type: 'success',
+        title: 'Evidence Collected',
+        message: `${evidence.type}: ${evidence.description}`,
+      })
+    },
+
+    removeEvidence: (state, action: PayloadAction<string>) => {
+      state.collectedEvidence =
+        state.collectedEvidence?.filter((e) => e.id !== action.payload) || []
+    },
+
+    // Compliance findings
+    addFinding: (state, action: PayloadAction<ComplianceFinding>) => {
+      const finding = action.payload
+      if (!finding) return
+
+      state.findings = state.findings || []
+      state.findings.push(finding)
+
+      state.auditJournal = state.auditJournal || []
+      state.auditJournal.push({
+        id: `entry_${Date.now()}`,
+        timestamp: Date.now(),
+        auditorId: finding.auditorId,
+        action: 'Added compliance finding',
+        details: `Status: ${finding.status}`,
+        findingId: finding.id,
+        type: 'finding_added',
+      })
+
+      if (finding.status === 'non-compliant') {
+        state.auditScore = Math.max(0, (state.auditScore || 100) - 10)
+      }
+
+      addNotification(state, {
+        id: `notif_${Date.now()}`,
+        timestamp: Date.now(),
+        type: 'warning',
+        title: 'Finding Identified',
+        message: `${finding.status}: ${finding.missionId}`,
+      })
+    },
+
+    updateFinding: (state, action: PayloadAction<ComplianceFinding>) => {
+      const idx = state.findings?.findIndex((f) => f.id === action.payload.id)
+      if (idx !== -1 && state.findings) {
+        state.findings[idx] = action.payload
+      }
+    },
+
+    // Risk assessments
+    addRiskAssessment: (state, action: PayloadAction<RiskAssessment>) => {
+      const risk = action.payload
+      if (!risk) return
+
+      state.riskAssessments = state.riskAssessments || []
+      state.riskAssessments.push(risk)
+
+      state.auditJournal = state.auditJournal || []
+      state.auditJournal.push({
+        id: `entry_${Date.now()}`,
+        timestamp: Date.now(),
+        auditorId: 'current_auditor',
+        action: 'Assessed risk',
+        details: `Severity: ${risk.severity}`,
+        findingId: risk.findingId,
+        type: 'risk_assessed',
+      })
+
+      addNotification(state, {
+        id: `notif_${Date.now()}`,
+        timestamp: Date.now(),
+        type: risk.severity === 'high' ? 'error' : 'warning',
+        title: 'Risk Assessment',
+        message: `${risk.severity.toUpperCase()} - ${risk.recommendation}`,
+      })
+    },
+
+    updateRiskAssessment: (state, action: PayloadAction<RiskAssessment>) => {
+      const idx = state.riskAssessments?.findIndex((r) => r.id === action.payload.id)
+      if (idx !== -1 && state.riskAssessments) {
+        state.riskAssessments[idx] = action.payload
+      }
+    },
+
+    // Journal management
+    addJournalEntry: (state, action: PayloadAction<JournalEntry>) => {
+      state.auditJournal = state.auditJournal || []
+      state.auditJournal.push(action.payload)
+    },
+
+    // Notification management
+    addNotificationToState: (state, action: PayloadAction<Notification>) => {
+      state.notifications = state.notifications || []
+      state.notifications.push(action.payload)
+    },
+
+    removeNotification: (state, action: PayloadAction<string>) => {
+      state.notifications = state.notifications?.filter((n) => n.id !== action.payload) || []
+    },
+
+    clearNotifications: (state) => {
+      state.notifications = []
+    },
+
+    // Score management
+    updateAuditScore: (state, action: PayloadAction<number>) => {
+      state.auditScore = Math.max(0, Math.min(100, action.payload))
+    },
+
+    // Reset audit session
+    resetAuditSession: (state) => {
+      Object.assign(state, initialState)
+    },
+
+    // UI Control
+    toggleAuditHUD: (state) => {
+      state.hudOpen = !state.hudOpen
+    },
+
+    setActiveTab: (
+      state,
+      action: PayloadAction<'overview' | 'missions' | 'findings' | 'risks' | 'journal'>
+    ) => {
+      state.activeTab = action.payload
+    },
+
+    addMission: (state, action: PayloadAction<AuditMission>) => {
+      state.activeMissions = state.activeMissions || []
+      if (action.payload) state.activeMissions.push(action.payload)
+    },
+  },
+})
+
+// Helper function to add notification
+function addNotification(state: AuditState, notification: Notification) {
+  state.notifications = state.notifications || []
+  state.notifications.push(notification)
+  setTimeout(() => {
+    state.notifications = state.notifications?.filter((n) => n.id !== notification.id) || []
+  }, 5000)
+}
+
+export const {
+  initializeAuditSession,
+  completeAuditSession,
+  setCurrentMission,
+  startMission,
+  completeMission,
+  updateMissionStatus,
+  addEvidence,
+  removeEvidence,
+  addFinding,
+  updateFinding,
+  addRiskAssessment,
+  updateRiskAssessment,
+  addJournalEntry,
+  addNotificationToState,
+  removeNotification,
+  clearNotifications,
+  updateAuditScore,
+  resetAuditSession,
+  toggleAuditHUD,
+  setActiveTab,
+  addMission,
+} = auditSlice.actions
+
+export default auditSlice.reducer
