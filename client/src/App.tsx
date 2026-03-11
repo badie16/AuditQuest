@@ -30,8 +30,8 @@ const HudButton = styled.button<{ $isDay: boolean }>`
   top: 20px;
   left: 20px;
   z-index: 1000;
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,7 +54,7 @@ const HudButton = styled.button<{ $isDay: boolean }>`
   }
 
   svg {
-    font-size: 28px;
+    font-size: 25DOpx;
   }
 `
 
