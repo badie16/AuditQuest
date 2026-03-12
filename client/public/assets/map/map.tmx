@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.0" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="15" nextobjectid="1269">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="22" nextobjectid="1274">
  <editorsettings>
   <export target="map.json" format="json"/>
  </editorsettings>
@@ -13298,13 +13298,14 @@
   <object id="838" gid="4389" x="1152" y="928" width="32" height="32"/>
   <object id="839" gid="4405" x="1184" y="928" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="9" name="Computer" locked="1">
-  <object id="875" gid="4680" x="1152" y="544" width="96" height="64"/>
-  <object id="876" gid="4682" x="1056" y="544" width="96" height="64"/>
-  <object id="877" gid="4684" x="960" y="544" width="96" height="64"/>
-  <object id="878" gid="4681" x="960" y="800" width="96" height="64"/>
-  <object id="879" gid="4683" x="1152" y="800" width="96" height="64"/>
+ <objectgroup id="19" name="Computer" locked="1">
+  <object id="1269" gid="4680" x="1152" y="544" width="96" height="64"/>
+  <object id="1270" gid="4682" x="1056" y="544" width="96" height="64"/>
+  <object id="1271" gid="4684" x="960" y="544" width="96" height="64"/>
+  <object id="1272" gid="4681" x="960" y="800" width="96" height="64"/>
+  <object id="1273" gid="4683" x="1152" y="800" width="96" height="64"/>
  </objectgroup>
+ <objectgroup id="21" name="serveur"/>
  <objectgroup id="10" name="Whiteboard">
   <object id="880" gid="4685" x="928" y="320" width="64" height="64"/>
   <object id="881" gid="4686" x="832" y="96" width="64" height="64"/>
