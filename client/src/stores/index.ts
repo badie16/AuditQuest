@@ -6,6 +6,7 @@ import whiteboardReducer from './WhiteboardStore'
 import chatReducer from './ChatStore'
 import roomReducer from './RoomStore'
 import auditReducer from './AuditStore'
+import dialogueReducer from './DialogueStore'
 
 enableMapSet()
 
@@ -17,6 +18,7 @@ const store = configureStore({
     chat: chatReducer,
     room: roomReducer,
     audit: auditReducer,
+    dialogue: dialogueReducer,
   },
   // Temporary disable serialize check for redux as we store MediaStream in ComputerStore.
   // https://stackoverflow.com/a/63244831
