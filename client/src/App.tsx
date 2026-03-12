@@ -18,6 +18,7 @@ import HelperButtonGroup from './components/HelperButtonGroup'
 import MobileVirtualJoystick from './components/MobileVirtualJoystick'
 import AuditHUD from './components/AuditHUD'
 import EvidenceCollectionDialog from './components/EvidenceCollectionDialog'
+import DialogueDialog from './components/DialogueDialog'
 import VideoControls from './components/VideoControls'
 import { closeEvidenceDialog } from './stores/AuditStore'
 import { useAppDispatch } from './hooks'
@@ -88,6 +89,7 @@ function App() {
           <Chat />
           {videoConnected ? <VideoControls /> : <VideoConnectionDialog />}
           <MobileVirtualJoystick />
+          <DialogueDialog />
           {evidenceDialogOpen && (
             <EvidenceCollectionDialog
               open={evidenceDialogOpen}
