@@ -61,22 +61,25 @@ export default class MyPlayer extends Player {
     const item = playerSelector.selectedItem
 
     if (Phaser.Input.Keyboard.JustDown(keyR)) {
-      // Check if the selected item has an active mission
-      const activeMissions = store.getState().audit.activeMissions
-      const mission = activeMissions.find(
-        (m) =>
-          m.targetObjectId === (item as any)?.id &&
-          (m.status === 'not_started' || m.status === 'in-progress')
-      )
-
-      if (mission) {
-        store.dispatch(
-          openEvidenceDialog({
-            targetName: mission.title,
-            targetId: (item as any).id,
-          })
+      // Check if the selected item exists and has an ID
+      const itemId = (item as any)?.id
+      if (itemId) {
+        const activeMissions = store.getState().audit.activeMissions
+        const mission = activeMissions.find(
+          (m) =>
+            m.targetObjectId === itemId &&
+            (m.status === 'not_started' || m.status === 'in-progress')
         )
-        return
+
+        if (mission) {
+          store.dispatch(
+            openEvidenceDialog({
+              targetName: mission.title,
+              targetId: itemId,
+            })
+          )
+          return
+        }
       }
 
       switch (item?.itemType) {

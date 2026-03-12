@@ -313,6 +313,10 @@ export default class Game extends Phaser.Scene {
       this.playerSelector.update(this.myPlayer, this.cursors)
       this.myPlayer.update(this.playerSelector, this.cursors, this.keyE, this.keyR, this.network)
     }
-    this.syncMissions()
+    
+    // Only sync missions every 30 frames for performance
+    if (this.scene.systems.animatingFrames % 30 === 0) {
+      this.syncMissions()
+    }
   }
 }
