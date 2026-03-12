@@ -87,7 +87,7 @@ export default class Game extends Phaser.Scene {
     // debugDraw(groundLayer, this)
 
     this.myPlayer = this.add.myPlayer(705, 500, 'adam', this.network.mySessionId)
-    this.playerSelector = new PlayerSelector(this, 0, 0, 16, 16)
+    this.playerSelector = new PlayerSelector(this, 0, 0, 32, 32)
 
     // import chair objects from Tiled map to Phaser
     const chairs = this.physics.add.staticGroup({ classType: Chair })
@@ -152,35 +152,35 @@ export default class Game extends Phaser.Scene {
     // The chairs indices depend on how they were placed in Tiled.
     
     // NPC 1: Office Room (Sarah) - Taking first available chair
-    if (allChairs[0]) {
+    if (allChairs[20]) {
       const sarah = npcs.get(0, 0, 'nancy') as NPC
       sarah.npcName = 'Sarah (Office Admin)'
       sarah.dialogueText = "Hello! I manage user accounts here. We make sure every new employee is registered correctly in the system."
-      sarah.sit(allChairs[0])
+      sarah.sit(allChairs[20])
     }
     
     // NPC 2: Meeting Room (Bob) - Taking a chair at the big table
-    if (allChairs[10]) { // Index 10 is usually in the meeting room area
+    if (allChairs[15]) {
       const bob = npcs.get(0, 0, 'ash') as NPC
       bob.npcName = 'Bob (Manager)'
       bob.dialogueText = "Welcome to the meeting room. We were just discussing our internal security organization roles."
-      bob.sit(allChairs[10])
+      bob.sit(allChairs[15])
     }
     
     // NPC 3: Break Room (Alice) - Sitting in the lounge area
-    if (allChairs[15]) {
+    if (allChairs[10]) {
       const alice = npcs.get(0, 0, 'lucy') as NPC
       alice.npcName = 'Alice (Employee)'
       alice.dialogueText = "Oh, hi! I'm just on my break. Security? Yeah, we had some training about not clicking on weird emails lately."
-      alice.sit(allChairs[15])
+      alice.sit(allChairs[10])
     }
     
     // NPC 4: Director Office (Director Smith) - Sitting at the head desk
-    if (allChairs[20]) {
+    if (allChairs[8]) {
       const smith = npcs.get(0, 0, 'adam') as NPC
       smith.npcName = 'Director Smith'
       smith.dialogueText = "I've signed all the latest security policies. You can find them on my desk for your audit."
-      smith.sit(allChairs[20])
+      smith.sit(allChairs[8])
     }
 
     this.cameras.main.zoom = 1.5
@@ -218,13 +218,14 @@ export default class Game extends Phaser.Scene {
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
     const currentItem = playerSelector.selectedItem as Item
-    // currentItem is undefined if nothing was perviously selected
-    if (currentItem) {
-      // if the selection has not changed, do nothing
-      if (currentItem === selectionItem || currentItem.depth >= selectionItem.depth) {
-        return
-      }
-      // if selection changes, clear pervious dialog
+    
+    // Always prioritize NPCs over any other item if they overlap
+    if (currentItem?.itemType === ItemType.NPC && selectionItem.itemType !== ItemType.NPC) {
+      return
+    }
+
+    // if selection changes, clear pervious dialog
+    if (currentItem && currentItem !== selectionItem) {
       if (this.myPlayer.playerBehavior !== PlayerBehavior.SITTING) currentItem.clearDialogBox()
     }
 

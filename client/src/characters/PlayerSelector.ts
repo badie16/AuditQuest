@@ -34,14 +34,15 @@ export default class PlayerSelector extends Phaser.GameObjects.Zone {
       joystickUp = player.joystickMovement?.direction.up
       joystickDown = player.joystickMovement?.direction.down
     }
+    const interactionDistance = 48
     if (cursors.left?.isDown || cursors.A?.isDown || joystickLeft) {
-      this.setPosition(x - 32, y)
+      this.setPosition(x - interactionDistance, y)
     } else if (cursors.right?.isDown || cursors.D?.isDown || joystickRight) {
-      this.setPosition(x + 32, y)
+      this.setPosition(x + interactionDistance, y)
     } else if (cursors.up?.isDown || cursors.W?.isDown || joystickUp) {
-      this.setPosition(x, y - 32)
+      this.setPosition(x, y - interactionDistance)
     } else if (cursors.down?.isDown || cursors.S?.isDown || joystickDown) {
-      this.setPosition(x, y + 32)
+      this.setPosition(x, y + interactionDistance)
     }
 
     // while currently selecting an item,

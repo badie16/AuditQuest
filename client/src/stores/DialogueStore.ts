@@ -5,6 +5,7 @@ interface DialogueState {
   title: string
   content: string
   npcId: string
+  portrait: string
 }
 
 const initialState: DialogueState = {
@@ -12,17 +13,19 @@ const initialState: DialogueState = {
   title: '',
   content: '',
   npcId: '',
+  portrait: '',
 }
 
 export const dialogueSlice = createSlice({
   name: 'dialogue',
   initialState,
   reducers: {
-    openDialogue: (state, action: PayloadAction<{ title: string; content: string; npcId: string }>) => {
+    openDialogue: (state, action: PayloadAction<{ title: string; content: string; npcId: string; portrait: string }>) => {
       state.isOpen = true
       state.title = action.payload.title
       state.content = action.payload.content
       state.npcId = action.payload.npcId
+      state.portrait = action.payload.portrait
     },
     closeDialogue: (state) => {
       state.isOpen = false

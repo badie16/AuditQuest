@@ -9,6 +9,7 @@ export default class NPC extends Item {
   npcName: string
   dialogueText: string
   npcTexture: string
+  portrait: string
 
   constructor(
     scene: Phaser.Scene,
@@ -26,6 +27,15 @@ export default class NPC extends Item {
     this.dialogueText = dialogueText
     this.npcTexture = texture
     
+    // Default portrait mapping based on texture name
+    const portraitMap: Record<string, string> = {
+      'adam': 'assets/images/login/Adam_login.png',
+      'ash': 'assets/images/login/Ash_login.png',
+      'lucy': 'assets/images/login/Lucy_login.png',
+      'nancy': 'assets/images/login/Nancy_login.png'
+    }
+    this.portrait = portraitMap[texture] || portraitMap['adam']
+    
     // Play idle animation by default
     this.anims.play(`${this.npcTexture}_idle_down`, true)
   }
@@ -38,6 +48,11 @@ export default class NPC extends Item {
     const shift = sittingShiftData[chair.itemDirection]
     this.setPosition(chair.x + shift[0], chair.y + shift[1])
     this.setDepth(chair.depth + shift[2])
+    
+    // Crucial for static bodies: update the physics body position
+    if (this.body instanceof Phaser.Physics.Arcade.StaticBody) {
+      this.refreshBody()
+    }
     
     // Play the sitting animation for this specific character
     this.anims.play(`${this.npcTexture}_sit_${chair.itemDirection}`, true)
@@ -53,6 +68,7 @@ export default class NPC extends Item {
         title: this.npcName,
         content: this.dialogueText,
         npcId: this.npcName.toLowerCase().replace(/\s/g, '_'),
+        portrait: this.portrait,
       })
     )
   }
