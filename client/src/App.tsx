@@ -17,7 +17,10 @@ import Chat from './components/Chat'
 import HelperButtonGroup from './components/HelperButtonGroup'
 import MobileVirtualJoystick from './components/MobileVirtualJoystick'
 import AuditHUD from './components/AuditHUD'
+import EvidenceCollectionDialog from './components/EvidenceCollectionDialog'
 import VideoControls from './components/VideoControls'
+import { closeEvidenceDialog } from './stores/AuditStore'
+import { useAppDispatch } from './hooks'
 
 const Backdrop = styled.div`
   position: absolute;
@@ -59,6 +62,7 @@ const HudButton = styled.button<{ $isDay: boolean }>`
 `
 
 function App() {
+  const dispatch = useAppDispatch()
   const [hudOpen, setHudOpen] = useState(false) // Etat pour HUD
 
   const loggedIn = useAppSelector((state) => state.user.loggedIn)
@@ -67,6 +71,8 @@ function App() {
 
   const computerDialogOpen = useAppSelector((state) => state.computer.computerDialogOpen)
   const whiteboardDialogOpen = useAppSelector((state) => state.whiteboard.whiteboardDialogOpen)
+  const evidenceDialogOpen = useAppSelector((state) => state.audit.evidenceDialogOpen)
+  const evidenceTargetName = useAppSelector((state) => state.audit.evidenceTargetName)
   const videoConnected = useAppSelector((state) => state.user.videoConnected)
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
 
@@ -82,6 +88,14 @@ function App() {
           <Chat />
           {videoConnected ? <VideoControls /> : <VideoConnectionDialog />}
           <MobileVirtualJoystick />
+          {evidenceDialogOpen && (
+            <EvidenceCollectionDialog
+              open={evidenceDialogOpen}
+              onClose={() => dispatch(closeEvidenceDialog())}
+              objectName={evidenceTargetName}
+              auditPoints={[]} // We can pass relevant points here later
+            />
+          )}
         </>
       )
     }

@@ -4,6 +4,7 @@ import { ItemType } from '../../../types/Items'
 export default class Item extends Phaser.Physics.Arcade.Sprite {
   private dialogBox!: Phaser.GameObjects.Container
   private statusBox!: Phaser.GameObjects.Container
+  private missionMarker!: Phaser.GameObjects.Text
   itemType!: ItemType
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
@@ -12,6 +13,34 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
     // add dialogBox and statusBox containers on top of everything which we can add text in later
     this.dialogBox = this.scene.add.container().setDepth(10000)
     this.statusBox = this.scene.add.container().setDepth(10000)
+
+    // add mission marker (initially invisible)
+    this.missionMarker = this.scene.add
+      .text(this.x, this.y - this.height * 0.5 - 10, '!', {
+        fontSize: '24px',
+        color: '#ff0000',
+        stroke: '#ffffff',
+        strokeThickness: 4,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setDepth(10000)
+      .setVisible(false)
+
+    // Add a simple float animation to the marker
+    this.scene.tweens.add({
+      targets: this.missionMarker,
+      y: '-=10',
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    })
+  }
+
+  setMissionMarker(visible: boolean) {
+    this.missionMarker.setVisible(visible)
+    this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 10)
   }
 
   // add texts into dialog box container

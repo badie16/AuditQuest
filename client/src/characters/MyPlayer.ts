@@ -11,6 +11,7 @@ import Whiteboard from '../items/Whiteboard'
 import { phaserEvents, Event } from '../events/EventCenter'
 import store from '../stores'
 import { pushPlayerJoinedMessage } from '../stores/ChatStore'
+import { openEvidenceDialog } from '../stores/AuditStore'
 import { ItemType } from '../../../types/Items'
 import { NavKeys } from '../../../types/KeyboardState'
 import { JoystickMovement } from '../components/Joystick'
@@ -60,6 +61,24 @@ export default class MyPlayer extends Player {
     const item = playerSelector.selectedItem
 
     if (Phaser.Input.Keyboard.JustDown(keyR)) {
+      // Check if the selected item has an active mission
+      const activeMissions = store.getState().audit.activeMissions
+      const mission = activeMissions.find(
+        (m) =>
+          m.targetObjectId === (item as any)?.id &&
+          (m.status === 'not_started' || m.status === 'in-progress')
+      )
+
+      if (mission) {
+        store.dispatch(
+          openEvidenceDialog({
+            targetName: mission.title,
+            targetId: (item as any).id,
+          })
+        )
+        return
+      }
+
       switch (item?.itemType) {
         case ItemType.COMPUTER:
           const computer = item as Computer

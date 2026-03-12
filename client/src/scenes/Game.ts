@@ -101,7 +101,9 @@ export default class Game extends Phaser.Scene {
     computerLayer.objects.forEach((obj, i) => {
       const item = this.addObjectFromTiled(computers, obj, 'computers', 'computer') as Computer
       item.setDepth(item.y + item.height * 0.27)
-      const id = `${i}`
+      // Check for a custom "id" property in Tiled, otherwise use the index
+      const customId = obj.properties?.find((p) => p.name === 'id')?.value
+      const id = customId || `${i}`
       item.id = id
       this.computerMap.set(id, item)
     })
@@ -116,7 +118,8 @@ export default class Game extends Phaser.Scene {
         'whiteboards',
         'whiteboard'
       ) as Whiteboard
-      const id = `${i}`
+      const customId = obj.properties?.find((p) => p.name === 'id')?.value
+      const id = customId || `${i}`
       item.id = id
       this.whiteboardMap.set(id, item)
     })
@@ -281,10 +284,35 @@ export default class Game extends Phaser.Scene {
     otherPlayer?.updateDialogBubble(content)
   }
 
+  private syncMissions() {
+    const activeMissions = store.getState().audit.activeMissions
+
+    // Reset all markers first
+    this.computerMap.forEach((computer) => computer.setMissionMarker(false))
+    this.whiteboardMap.forEach((whiteboard) => whiteboard.setMissionMarker(false))
+
+    // Set markers for objects that have active missions
+    activeMissions.forEach((mission) => {
+      if (mission.status === 'not_started' || mission.status === 'in-progress') {
+        if (mission.targetObjectId) {
+          const computer = this.computerMap.get(mission.targetObjectId)
+          if (computer) {
+            computer.setMissionMarker(true)
+          }
+          const whiteboard = this.whiteboardMap.get(mission.targetObjectId)
+          if (whiteboard) {
+            whiteboard.setMissionMarker(true)
+          }
+        }
+      }
+    })
+  }
+
   update(t: number, dt: number) {
     if (this.myPlayer && this.network) {
       this.playerSelector.update(this.myPlayer, this.cursors)
       this.myPlayer.update(this.playerSelector, this.cursors, this.keyE, this.keyR, this.network)
     }
+    this.syncMissions()
   }
 }

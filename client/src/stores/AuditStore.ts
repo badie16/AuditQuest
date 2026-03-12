@@ -25,6 +25,9 @@ const initialState: AuditState = {
   status: 'pending',
   startedAt: 0,
   hudOpen: true,
+  evidenceDialogOpen: false,
+  evidenceTargetName: '',
+  evidenceTargetId: '',
   activeTab: 'overview',
 }
 
@@ -32,6 +35,20 @@ const auditSlice = createSlice({
   name: 'audit',
   initialState,
   reducers: {
+    openEvidenceDialog: (
+      state,
+      action: PayloadAction<{ targetName: string; targetId: string }>
+    ) => {
+      state.evidenceDialogOpen = true
+      state.evidenceTargetName = action.payload.targetName
+      state.evidenceTargetId = action.payload.targetId
+    },
+
+    closeEvidenceDialog: (state) => {
+      state.evidenceDialogOpen = false
+      state.evidenceTargetName = ''
+      state.evidenceTargetId = ''
+    },
     // Session management
     initializeAuditSession: (
       state,
@@ -314,6 +331,8 @@ export const {
   toggleAuditHUD,
   setActiveTab,
   addMission,
+  openEvidenceDialog,
+  closeEvidenceDialog,
 } = auditSlice.actions
 
 export default auditSlice.reducer

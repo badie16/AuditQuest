@@ -85,6 +85,8 @@ export const initializeAuditSession = () => {
       assignedTo: '',
       createdAt: new Date().toISOString(),
       dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      targetObjectId: '0',
+      targetRoom: 'Office',
     },
     {
       id: 'a9-1',
@@ -115,6 +117,8 @@ export const initializeAuditSession = () => {
       assignedTo: '',
       createdAt: new Date().toISOString(),
       dueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+      targetObjectId: '1',
+      targetRoom: 'Server Room',
     },
   ]
 

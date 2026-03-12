@@ -8,18 +8,20 @@ export type Priority = 'low' | 'medium' | 'high'
 
 export interface AuditMission {
   id: string
-  name: string
+  controlId: string
+  title: string
   description: string
-  isoControl: string
-  zone: string
-  status: AuditStatus
-  evidenceRequired: string[]
-  collectedEvidence: string[]
-  compliance?: ComplianceStatus
-  justification?: string
+  status: AuditStatus | 'not_started'
   priority: Priority
-  createdAt: number
-  completedAt?: number
+  category: string
+  evidenceRequired: string[]
+  evidenceCollected: number
+  completionPercentage: number
+  assignedTo: string
+  createdAt: string
+  dueDate: string
+  targetObjectId?: string
+  targetRoom?: string
 }
 
 export interface Evidence {
@@ -136,6 +138,9 @@ export interface AuditState {
   startedAt: number
   completedAt?: number
   hudOpen?: boolean
+  evidenceDialogOpen: boolean
+  evidenceTargetName: string
+  evidenceTargetId: string
   activeTab?: 'overview' | 'missions' | 'findings' | 'risks' | 'journal'
 }
 
