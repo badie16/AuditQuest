@@ -112,7 +112,11 @@ export default class MyPlayer extends Player {
     switch (this.playerBehavior) {
       case PlayerBehavior.IDLE:
         // if press E in front of selected chair
-        if (Phaser.Input.Keyboard.JustDown(keyE) && item?.itemType === ItemType.CHAIR) {
+        if (
+          Phaser.Input.Keyboard.JustDown(keyE) &&
+          item?.itemType === ItemType.CHAIR &&
+          !(item as Chair).isOccupied
+        ) {
           const chairItem = item as Chair
           /**
            * move player to the chair and play sit animation

@@ -34,6 +34,7 @@ export default class NPC extends Item {
   sit(chair: Chair) {
     if (!chair.itemDirection) return
 
+    chair.isOccupied = true // Mark chair as occupied
     const shift = sittingShiftData[chair.itemDirection]
     this.setPosition(chair.x + shift[0], chair.y + shift[1])
     this.setDepth(chair.depth + shift[2])
