@@ -7,6 +7,7 @@ import Network from '../services/Network'
 import Chair from '../items/Chair'
 import Computer from '../items/Computer'
 import Whiteboard from '../items/Whiteboard'
+import NPC from '../items/NPC'
 
 import { phaserEvents, Event } from '../events/EventCenter'
 import store from '../stores'
@@ -54,11 +55,20 @@ export default class MyPlayer extends Player {
     cursors: NavKeys,
     keyE: Phaser.Input.Keyboard.Key,
     keyR: Phaser.Input.Keyboard.Key,
+    keyF: Phaser.Input.Keyboard.Key,
     network: Network
   ) {
     if (!cursors) return
 
     const item = playerSelector.selectedItem
+
+    if (Phaser.Input.Keyboard.JustDown(keyF)) {
+      if (item?.itemType === ItemType.NPC) {
+        const npc = item as NPC
+        npc.talk()
+        return
+      }
+    }
 
     if (Phaser.Input.Keyboard.JustDown(keyR)) {
       // Check if the selected item exists and has an ID
