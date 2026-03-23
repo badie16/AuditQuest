@@ -17,7 +17,6 @@ import {
   WhiteboardRemoveUserCommand,
 } from './commands/WhiteboardUpdateArrayCommand'
 import ChatMessageUpdateCommand from './commands/ChatMessageUpdateCommand'
-
 // Import Audit Commands
 import { InitializeAuditMissionsCommand, StartMissionCommand, CompleteMissionCommand } from './commands/AuditMissionCommand'
 import { CollectEvidenceCommand, VerifyEvidenceCommand, RemoveEvidenceCommand } from './commands/EvidenceCollectionCommand'

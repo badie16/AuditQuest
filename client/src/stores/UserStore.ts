@@ -19,8 +19,12 @@ export const userSlice = createSlice({
     loggedIn: false,
     playerNameMap: new Map<string, string>(),
     showJoystick: window.innerWidth < 650,
+    currentRoom: 'Office',
   },
   reducers: {
+    setCurrentRoom: (state, action: PayloadAction<string>) => {
+      state.currentRoom = action.payload
+    },
     toggleBackgroundMode: (state) => {
       const newMode =
         state.backgroundMode === BackgroundMode.DAY ? BackgroundMode.NIGHT : BackgroundMode.DAY
@@ -58,6 +62,7 @@ export const {
   setPlayerNameMap,
   removePlayerNameMap,
   setShowJoystick,
+  setCurrentRoom,
 } = userSlice.actions
 
 export default userSlice.reducer

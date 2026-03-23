@@ -30,7 +30,7 @@ Ce document suit l'évolution technique du projet, les corrections effectuées e
 
 ## 3. Choses Incomplètes ou en Cours ⏳
 
-- **Validation des Preuves :** Le système permet de collecter des preuves mais pas encore de les "valider" ou de les "rejeter" par un auditeur senior (pourtant prévu dans le schéma).
+- **Validation des Preuves :** Le système permet de collecter des preuves mais pas encoe rde les "valider" ou de les "rejeter" par un auditeur senior (pourtant prévu dans le schéma).
 - **Rapport Final :** Le générateur de rapport existe mais il n'y a pas d'interface pour le visualiser sans quitter le jeu.
 
 ---

@@ -356,15 +356,36 @@ export default class Game extends Phaser.Scene {
     })
   }
 
+  private updateRoomIndicator() {
+    if (!this.myPlayer) return
+
+    const x = this.myPlayer.x
+    const y = this.myPlayer.y
+    let roomName = 'Main Office'
+
+    // Define room boundaries (approximate based on map layout)
+    if (x < 400 && y < 450) roomName = 'Server Room'
+    else if (x > 1000 && y < 450) roomName = 'Meeting Room'
+    else if (x > 900 && y > 700) roomName = 'Break Room'
+    else if (x < 450 && y > 700) roomName = 'Director Office'
+    else if (y > 900) roomName = 'Basement'
+
+    const currentRoom = store.getState().user.currentRoom
+    if (roomName !== currentRoom) {
+      store.dispatch(setCurrentRoom(roomName))
+    }
+  }
+
   update(t: number, dt: number) {
     if (this.myPlayer && this.network) {
       this.playerSelector.update(this.myPlayer, this.cursors)
       this.myPlayer.update(this.playerSelector, this.cursors, this.keyE, this.keyR, this.keyF, this.network)
     }
     
-    // Only sync missions every 30 frames for performance
+    // Only sync missions and room every 30 frames for performance
     if (this.scene.systems.animatingFrames % 30 === 0) {
       this.syncMissions()
+      this.updateRoomIndicator()
     }
   }
 }
