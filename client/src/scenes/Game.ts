@@ -160,10 +160,19 @@ export default class Game extends Phaser.Scene {
       const chairIndex = data.id === 'npc_director' ? 8 : (data.id === 'npc_manager' ? 15 : (data.id === 'npc_hr' ? 10 : 20))
       
       if (allChairs[chairIndex]) {
+        // Instantiate NPC with the correct arguments (including portrait)
         const npc = npcs.get(0, 0, data.texture) as NPC
         npc.npcName = data.name
         npc.dialogueText = data.dialogue
-        npc.targetObjectId = data.id
+        npc.portrait = data.portrait // Set property
+        npc.targetObjectId = data.id // Set targetObjectId for evidence linking
+        
+        // Re-initialize using constructor-like logic if needed, or simply ensure properties are set.
+        // Since Phaser group.get() reuses objects, we must manually set properties if the constructor isn't called again.
+        // However, here we are likely creating new ones initially.
+        // Let's ensure the sprite uses the correct frame/anim
+        npc.anims.play(`${data.texture}_idle_down`, true)
+
         npc.sit(allChairs[chairIndex])
         this.npcMap.set(data.id, npc)
       }

@@ -1,8 +1,10 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Box } from '@mui/material'
+import { Button } from '@mui/material'
 import { useAppSelector, useAppDispatch } from '../hooks'
 import { closeDialogue } from '../stores/DialogueStore'
+import phaserGame from '../PhaserGame'
+import Game from '../scenes/Game'
 
 const DialogueWrapper = styled.div`
   position: fixed;
@@ -19,18 +21,12 @@ const DialogueWrapper = styled.div`
   flex-direction: row;
   gap: 20px;
   z-index: 2000;
-  cursor: pointer;
   font-family: 'Courier New', Courier, monospace;
   animation: slideUp 0.2s steps(4);
 
   @keyframes slideUp {
     from { transform: translate(-50%, 100%); opacity: 0; }
     to { transform: translate(-50%, 0); opacity: 1; }
-  }
-
-  &:active {
-    transform: translate(-50%, 2px);
-    box-shadow: 6px 6px 0px #000;
   }
 `
 
@@ -79,30 +75,42 @@ const ContentBox = styled.div`
   text-shadow: 2px 2px 0px #000;
 `
 
-const BlinkingArrow = styled.div`
+const ActionBox = styled.div`
   position: absolute;
-  bottom: -8px;
-  right: 0;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 12px solid #3498db;
-  animation: blink 0.8s steps(2) infinite;
-
-  @keyframes blink {
-    from { visibility: visible; }
-    to { visibility: hidden; }
-  }
+  bottom: 10px;
+  right: 16px;
+  display: flex;
+  gap: 10px;
+  z-index: 2001;
 `
 
 export default function DialogueDialog() {
   const dispatch = useAppDispatch()
-  const { isOpen, title, content, portrait } = useAppSelector((state) => state.dialogue)
+  const { isOpen, title, content, portrait, npcId } = useAppSelector((state) => state.dialogue)
+  const activeMissions = useAppSelector((state) => state.audit.activeMissions)
 
   if (!isOpen) return null
 
   const handleClose = () => {
+    dispatch(closeDialogue())
+  }
+
+  const handleCollectEvidence = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const game = phaserGame.scene.keys.game as Game
+    const network = game.network
+
+    // Find if this NPC is a target for any active mission
+    const mission = activeMissions.find(m => m.targetObjectId === npcId)
+    
+    if (network) {
+      network.addEvidence(
+        mission?.id || 'general',
+        'interview',
+        `Interview with ${title}: "${content}"`,
+        'Office'
+      )
+    }
     dispatch(closeDialogue())
   }
 
@@ -116,8 +124,19 @@ export default function DialogueDialog() {
 
       <ContentBox>
         {content}
-        <BlinkingArrow />
       </ContentBox>
+
+      <ActionBox>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          size="small"
+          onClick={handleCollectEvidence}
+          sx={{ border: '2px solid white', boxShadow: '2px 2px 0 black' }}
+        >
+          Collect as Evidence
+        </Button>
+      </ActionBox>
     </DialogueWrapper>
   )
 }

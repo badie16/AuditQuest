@@ -19,6 +19,7 @@ export default class NPC extends AuditableObject {
     texture: string,
     npcName: string,
     dialogueText: string,
+    portrait?: string, // Added portrait argument
     frame?: string | number
   ) {
     super(scene, x, y, texture, frame)
@@ -28,14 +29,8 @@ export default class NPC extends AuditableObject {
     this.dialogueText = dialogueText
     this.npcTexture = texture
     
-    // Default portrait mapping based on texture name
-    const portraitMap: Record<string, string> = {
-      'adam': 'assets/images/login/Adam_login.png',
-      'ash': 'assets/images/login/Ash_login.png',
-      'lucy': 'assets/images/login/Lucy_login.png',
-      'nancy': 'assets/images/login/Nancy_login.png'
-    }
-    this.portrait = portraitMap[texture] || portraitMap['adam']
+    // Use provided portrait or fallback to a default if missing
+    this.portrait = portrait || 'assets/images/login/Adam_login.png'
     
     // Play idle animation by default
     this.anims.play(`${this.npcTexture}_idle_down`, true)
