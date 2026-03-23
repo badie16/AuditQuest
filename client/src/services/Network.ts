@@ -20,12 +20,12 @@ import {
   pushPlayerLeftMessage,
 } from '../stores/ChatStore'
 import { setWhiteboardUrls } from '../stores/WhiteboardStore'
-import { 
-  initializeAuditSession, 
-  addMission, 
-  addEvidence, 
+import {
+  initializeAuditSession,
+  addMission,
+  addEvidence,
   addJournalEntry,
-  updateMissionStatus
+  updateMissionStatus,
 } from '../stores/AuditStore'
 
 export default class Network {
@@ -98,94 +98,108 @@ export default class Network {
     this.webRTC = new WebRTC(this.mySessionId, this)
 
     // --- AUDIT STATE SYNCHRONIZATION ---
-    
+
     this.room.state.listen('auditSession', (currentValue) => {
       if (currentValue) {
-        store.dispatch(initializeAuditSession({
-          sessionId: currentValue.sessionId,
-          status: currentValue.status as any,
-          startDate: new Date(currentValue.startTime).toISOString(),
-        }))
+        store.dispatch(
+          initializeAuditSession({
+            sessionId: currentValue.sessionId,
+            status: currentValue.status as any,
+            startDate: new Date(currentValue.startTime).toISOString(),
+          })
+        )
       }
     })
 
     this.room.state.missions.onAdd = (mission, key) => {
-      store.dispatch(addMission({
-        id: mission.id,
-        controlId: mission.isoControl,
-        title: mission.name,
-        description: mission.description,
-        status: mission.status as any,
-        priority: mission.priority as any,
-        category: mission.zone,
-        evidenceRequired: Array.from(mission.evidenceRequired),
-        evidenceCollected: mission.collectedEvidence.length,
-        completionPercentage: mission.status === 'completed' ? 100 : 0,
-        assignedTo: '',
-        createdAt: new Date(mission.createdAt).toISOString(),
-        dueDate: '',
-        targetObjectId: mission.targetObjectId,
-        targetRoom: mission.targetRoom,
-      }))
+      store.dispatch(
+        addMission({
+          id: mission.id,
+          controlId: mission.isoControl,
+          title: mission.name,
+          description: mission.description,
+          status: mission.status as any,
+          priority: mission.priority as any,
+          category: mission.zone,
+          evidenceRequired: Array.from(mission.evidenceRequired),
+          evidenceCollected: mission.collectedEvidence.length,
+          completionPercentage: mission.status === 'completed' ? 100 : 0,
+          assignedTo: '',
+          createdAt: new Date(mission.createdAt).toISOString(),
+          dueDate: '',
+          targetObjectId: mission.targetObjectId,
+          targetRoom: mission.targetRoom,
+        })
+      )
 
       mission.onChange = (changes) => {
-        changes.forEach(change => {
+        changes.forEach((change) => {
           if (change.field === 'status') {
-            store.dispatch(updateMissionStatus({ missionId: mission.id, status: change.value as any }))
+            store.dispatch(
+              updateMissionStatus({ missionId: mission.id, status: change.value as any })
+            )
           }
         })
       }
     }
 
     this.room.state.evidence.onAdd = (evidence, key) => {
-      store.dispatch(addEvidence({
-        id: evidence.id,
-        missionId: evidence.missionId,
-        type: evidence.type as any,
-        description: evidence.description,
-        location: evidence.location,
-        collectionTime: evidence.collectionTime,
-        auditorId: evidence.auditorId,
-        verified: evidence.verified,
-      }))
+      store.dispatch(
+        addEvidence({
+          id: evidence.id,
+          missionId: evidence.missionId,
+          type: evidence.type as any,
+          description: evidence.description,
+          location: evidence.location,
+          collectionTime: evidence.collectionTime,
+          auditorId: evidence.auditorId,
+          verified: evidence.verified,
+        })
+      )
     }
 
     this.room.state.findings.onAdd = (finding, key) => {
-      store.dispatch(addFinding({
-        id: finding.id,
-        missionId: finding.missionId,
-        controlId: finding.missionId, // missionId is controlId in this system
-        status: finding.status as any,
-        justification: finding.justification,
-        auditorId: finding.auditorId,
-        timestamp: finding.createdAt,
-        relatedEvidence: Array.from(finding.evidence),
-      }))
+      store.dispatch(
+        addFinding({
+          id: finding.id,
+          missionId: finding.missionId,
+          controlId: finding.missionId, // missionId is controlId in this system
+          status: finding.status as any,
+          justification: finding.justification,
+          auditorId: finding.auditorId,
+          timestamp: finding.createdAt,
+          relatedEvidence: Array.from(finding.evidence),
+        })
+      )
     }
 
     this.room.state.risks.onAdd = (risk, key) => {
-      store.dispatch(addRiskAssessment({
-        id: risk.id,
-        findingId: risk.findingId,
-        probability: risk.probability as any,
-        impact: risk.impact as any,
-        severity: risk.severity as any,
-        recommendation: risk.recommendation,
-        remediationDue: risk.remediationDue,
-        createdAt: risk.createdAt,
-      }))
+      store.dispatch(
+        addRiskAssessment({
+          id: risk.id,
+          findingId: risk.findingId,
+          probability: risk.probability as any,
+          impact: risk.impact as any,
+          severity: risk.severity as any,
+          recommendation: risk.recommendation,
+          remediationDue: risk.remediationDue,
+          createdAt: risk.createdAt,
+        })
+      )
     }
 
     this.room.state.journal.onAdd = (entry, key) => {
-      store.dispatch(addJournalEntry({
-        id: entry.id,
-        timestamp: entry.timestamp,
-        auditorId: entry.auditorId,
-        action: entry.action,
-        details: entry.details,
-        missionId: entry.missionId,
-        type: entry.type as any,
-      }))
+      store.dispatch(
+        addJournalEntry({
+          id: entry.id,
+          timestamp: entry.timestamp,
+          auditorId: entry.auditorId,
+          action: entry.action,
+          details: entry.details,
+          missionId: entry.missionId,
+          type: entry.type as any,
+        })
+      )
     }
 
     // --- OFFICE STATE SYNCHRONIZATION ---
@@ -260,11 +274,17 @@ export default class Network {
     phaserEvents.on(Event.UPDATE_DIALOG_BUBBLE, callback, context)
   }
 
-  onItemUserAdded(callback: (playerId: string, key: string, itemType: ItemType) => void, context?: any) {
+  onItemUserAdded(
+    callback: (playerId: string, key: string, itemType: ItemType) => void,
+    context?: any
+  ) {
     phaserEvents.on(Event.ITEM_USER_ADDED, callback, context)
   }
 
-  onItemUserRemoved(callback: (playerId: string, key: string, itemType: ItemType) => void, context?: any) {
+  onItemUserRemoved(
+    callback: (playerId: string, key: string, itemType: ItemType) => void,
+    context?: any
+  ) {
     phaserEvents.on(Event.ITEM_USER_REMOVED, callback, context)
   }
 
@@ -284,7 +304,10 @@ export default class Network {
     phaserEvents.on(Event.MY_PLAYER_VIDEO_CONNECTED, callback, context)
   }
 
-  onPlayerUpdated(callback: (field: string, value: number | string, key: string) => void, context?: any) {
+  onPlayerUpdated(
+    callback: (field: string, value: number | string, key: string) => void,
+    context?: any
+  ) {
     phaserEvents.on(Event.PLAYER_UPDATED, callback, context)
   }
 
