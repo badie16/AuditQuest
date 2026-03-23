@@ -289,69 +289,99 @@ export default class Network {
   }
 
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
-    this.room?.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
+    }
   }
 
   updatePlayerName(currentName: string) {
-    this.room?.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
+    }
   }
 
   readyToConnect() {
-    this.room?.send(Message.READY_TO_CONNECT)
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.READY_TO_CONNECT)
+    }
     phaserEvents.emit(Event.MY_PLAYER_READY)
   }
 
   videoConnected() {
-    this.room?.send(Message.VIDEO_CONNECTED)
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.VIDEO_CONNECTED)
+    }
     phaserEvents.emit(Event.MY_PLAYER_VIDEO_CONNECTED)
   }
 
   playerStreamDisconnect(id: string) {
-    this.room?.send(Message.DISCONNECT_STREAM, { clientId: id })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.DISCONNECT_STREAM, { clientId: id })
+    }
     this.webRTC?.deleteVideoStream(id)
   }
 
   // --- AUDIT ACTIONS ---
 
   startMission(missionId: string) {
-    this.room?.send(Message.START_MISSION, { missionId })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.START_MISSION, { missionId })
+    }
   }
 
   completeMission(missionId: string, compliance: string, justification: string) {
-    this.room?.send(Message.COMPLETE_MISSION, { missionId, compliance, justification })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.COMPLETE_MISSION, { missionId, compliance, justification })
+    }
   }
 
   addEvidence(missionId: string, type: string, description: string, location: string) {
-    this.room?.send(Message.ADD_EVIDENCE, { missionId, type, description, location })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.ADD_EVIDENCE, { missionId, type, description, location })
+    }
   }
 
   addRisk(findingId: string, probability: string, impact: string, recommendation: string) {
-    this.room?.send(Message.ADD_RISK, { findingId, probability, impact, recommendation })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.ADD_RISK, { findingId, probability, impact, recommendation })
+    }
   }
 
   // --- ITEM ACTIONS ---
 
   connectToComputer(id: string) {
-    this.room?.send(Message.CONNECT_TO_COMPUTER, { computerId: id })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.CONNECT_TO_COMPUTER, { computerId: id })
+    }
   }
 
   disconnectFromComputer(id: string) {
-    this.room?.send(Message.DISCONNECT_FROM_COMPUTER, { computerId: id })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.DISCONNECT_FROM_COMPUTER, { computerId: id })
+    }
   }
 
   connectToWhiteboard(id: string) {
-    this.room?.send(Message.CONNECT_TO_WHITEBOARD, { whiteboardId: id })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.CONNECT_TO_WHITEBOARD, { whiteboardId: id })
+    }
   }
 
   disconnectFromWhiteboard(id: string) {
-    this.room?.send(Message.DISCONNECT_FROM_WHITEBOARD, { whiteboardId: id })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.DISCONNECT_FROM_WHITEBOARD, { whiteboardId: id })
+    }
   }
 
   onStopScreenShare(id: string) {
-    this.room?.send(Message.STOP_SCREEN_SHARE, { computerId: id })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.STOP_SCREEN_SHARE, { computerId: id })
+    }
   }
 
   addChatMessage(content: string) {
-    this.room?.send(Message.ADD_CHAT_MESSAGE, { content: content })
+    if (this.room?.connection?.readyState === 1) {
+      this.room.send(Message.ADD_CHAT_MESSAGE, { content: content })
+    }
   }
 }
