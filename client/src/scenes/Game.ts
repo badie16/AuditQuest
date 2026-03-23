@@ -21,6 +21,7 @@ import { ItemType } from '../../../types/Items'
 
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
+import { setCurrentRoom } from '../stores/UserStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { NPCS_DATA } from '../../../types/AuditData'
 

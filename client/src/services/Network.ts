@@ -26,6 +26,8 @@ import {
   addEvidence,
   addJournalEntry,
   updateMissionStatus,
+  addFinding,
+  addRiskAssessment,
 } from '../stores/AuditStore'
 
 export default class Network {

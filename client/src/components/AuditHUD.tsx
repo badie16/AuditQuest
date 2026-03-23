@@ -168,8 +168,8 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                       onClick={() => onMissionSelected?.(mission.id)}
                     >
                       <div className="mission-info">
-                        <div className="mission-code">{mission.isoControl}</div>
-                        <div className="mission-name">{mission.name}</div>
+                        <div className="mission-code">{mission.controlId}</div>
+                        <div className="mission-name">{mission.title}</div>
                         <div className="mission-status">
                           <span className={`status-badge status-${mission.status || 'pending'}`}>
                             {mission.status || 'pending'}
