@@ -22,8 +22,9 @@ import {
   FormGroup,
 } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { addFinding } from '../stores/AuditStore'
 import { RootState } from '../stores'
+import phaserGame from '../PhaserGame'
+import Game from '../scenes/Game'
 
 interface ComplianceEvaluationDialogProps {
   open: boolean
@@ -36,7 +37,6 @@ export default function ComplianceEvaluationDialog({
   onClose,
   mission,
 }: ComplianceEvaluationDialogProps) {
-  const dispatch = useDispatch()
   const evidence = useSelector((state: RootState) => state.audit.collectedEvidence)
 
   const [complianceStatus, setComplianceStatus] = useState<
@@ -57,8 +57,11 @@ export default function ComplianceEvaluationDialog({
     if (!justification.trim()) {
       newErrors.push('Justification is required')
     }
-    if (relatedEvidence.length === 0) {
-      newErrors.push('At least one evidence item must be selected')
+    
+    // In some cases, partial/non-compliant might not have evidence yet, 
+    // but usually we want at least one evidence linked for the evaluation.
+    if (relatedEvidence.length === 0 && complianceStatus === 'compliant') {
+      newErrors.push('At least one evidence item must be selected for compliance')
     }
 
     setErrors(newErrors)
@@ -74,20 +77,13 @@ export default function ComplianceEvaluationDialog({
   const handleSubmit = () => {
     if (!validateForm()) return
 
-    const finding = {
-      id: `finding_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      missionId: mission.id,
-      controlId: mission.isoControl,
-      status: complianceStatus,
-      justification,
-      notes,
-      relatedEvidence,
-      timestamp: Date.now(),
-      auditorId: 'current-user',
-    }
+    const game = phaserGame.scene.keys.game as Game
+    const network = game.network
 
-    dispatch(addFinding(finding))
-    handleClose()
+    if (network) {
+      network.completeMission(mission.id, complianceStatus, justification)
+      onClose()
+    }
   }
 
   const handleClose = () => {

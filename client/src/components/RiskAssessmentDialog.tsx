@@ -27,7 +27,8 @@ import {
   Paper,
 } from '@mui/material'
 import { useDispatch } from 'react-redux'
-import { addRiskAssessment } from '../stores/AuditStore'
+import phaserGame from '../PhaserGame'
+import Game from '../scenes/Game'
 
 interface RiskAssessmentDialogProps {
   open: boolean
@@ -42,8 +43,6 @@ export default function RiskAssessmentDialog({
   onClose,
   finding,
 }: RiskAssessmentDialogProps) {
-  const dispatch = useDispatch()
-
   const [probability, setProbability] = useState<RiskLevel>('medium')
   const [impact, setImpact] = useState<RiskLevel>('medium')
   const [recommendation, setRecommendation] = useState('')
@@ -106,23 +105,13 @@ export default function RiskAssessmentDialog({
   const handleSubmit = () => {
     if (!validateForm()) return
 
-    const severity = getRiskSeverity()
+    const game = phaserGame.scene.keys.game as Game
+    const network = game.network
 
-    const assessment = {
-      id: `risk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      findingId: finding.id,
-      controlId: finding.controlId,
-      probability,
-      impact,
-      severity,
-      recommendation,
-      remediationDue: Date.now() + parseInt(remediationDays) * 24 * 60 * 60 * 1000,
-      status: 'open',
-      createdAt: Date.now(),
+    if (network) {
+      network.addRisk(finding.id, probability, impact, recommendation)
+      onClose()
     }
-
-    dispatch(addRiskAssessment(assessment))
-    handleClose()
   }
 
   const handleClose = () => {

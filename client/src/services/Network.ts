@@ -148,6 +148,32 @@ export default class Network {
       }))
     }
 
+    this.room.state.findings.onAdd = (finding, key) => {
+      store.dispatch(addFinding({
+        id: finding.id,
+        missionId: finding.missionId,
+        controlId: finding.missionId, // missionId is controlId in this system
+        status: finding.status as any,
+        justification: finding.justification,
+        auditorId: finding.auditorId,
+        timestamp: finding.createdAt,
+        relatedEvidence: Array.from(finding.evidence),
+      }))
+    }
+
+    this.room.state.risks.onAdd = (risk, key) => {
+      store.dispatch(addRiskAssessment({
+        id: risk.id,
+        findingId: risk.findingId,
+        probability: risk.probability as any,
+        impact: risk.impact as any,
+        severity: risk.severity as any,
+        recommendation: risk.recommendation,
+        remediationDue: risk.remediationDue,
+        createdAt: risk.createdAt,
+      }))
+    }
+
     this.room.state.journal.onAdd = (entry, key) => {
       store.dispatch(addJournalEntry({
         id: entry.id,

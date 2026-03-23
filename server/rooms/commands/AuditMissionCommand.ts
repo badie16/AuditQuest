@@ -1,5 +1,6 @@
 import { Command } from '@colyseus/command'
-import { OfficeState, MissionSchema, JournalEntrySchema } from '../schema/OfficeState'
+import { OfficeState } from '../schema/OfficeState'
+import { MissionSchema, JournalEntrySchema, ComplianceFindingSchema } from '../schema/AuditState'
 import { ISO_27002_CONTROLS } from '../../../types/AuditTypes'
 import { v4 as uuid } from 'uuid'
 
@@ -15,7 +16,10 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
       mission.zone = control.zone
       mission.status = 'pending'
       mission.priority = ['A.5.1', 'A.9.1', 'A.11.1'].includes(control.id) ? 'high' : 'medium'
-      mission.evidenceRequired = generateEvidenceRequirements(control.id)
+      
+      const requirements = generateEvidenceRequirements(control.id)
+      requirements.forEach(req => mission.evidenceRequired.push(req))
+      
       mission.createdAt = Date.now()
 
       this.state.missions.set(mission.id, mission)
@@ -75,6 +79,21 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     mission.compliance = compliance
     mission.justification = justification
     mission.completedAt = Date.now()
+
+    // Create a finding
+    const finding = new ComplianceFindingSchema()
+    finding.id = uuid()
+    finding.missionId = missionId
+    finding.status = compliance
+    finding.justification = justification
+    finding.auditorId = client.sessionId || 'auditor'
+    finding.createdAt = Date.now()
+    finding.lastModified = Date.now()
+    
+    // Link evidence from mission
+    mission.collectedEvidence.forEach(evId => finding.evidence.push(evId))
+
+    this.state.findings.set(finding.id, finding)
 
     // Add journal entry
     const journalEntry = new JournalEntrySchema()

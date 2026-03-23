@@ -1,5 +1,6 @@
 import { Command } from '@colyseus/command'
-import { OfficeState, EvidenceSchema, JournalEntrySchema, NotificationSchema } from '../schema/OfficeState'
+import { OfficeState } from '../schema/OfficeState'
+import { EvidenceSchema, JournalEntrySchema, NotificationSchema } from '../schema/AuditState'
 import { v4 as uuid } from 'uuid'
 
 export class CollectEvidenceCommand extends Command<OfficeState> {

@@ -1,14 +1,14 @@
 import { Command } from '@colyseus/command'
+import { OfficeState } from '../schema/OfficeState'
 import {
-  OfficeState,
   RiskAssessmentSchema,
   JournalEntrySchema,
   NotificationSchema,
-} from '../schema/OfficeState'
+} from '../schema/AuditState'
 import { RISK_MATRIX } from '../../../types/AuditTypes'
 import { v4 as uuid } from 'uuid'
 
-export class AssessRiskCommand extends Command<OfficeState> {
+export class CreateRiskAssessmentCommand extends Command<OfficeState> {
   execute(client: any, {
     findingId,
     probability,
@@ -142,7 +142,7 @@ export class RemoveRiskAssessmentCommand extends Command<OfficeState> {
 }
 
 export const riskAssessmentCommands = [
-  AssessRiskCommand,
+  CreateRiskAssessmentCommand,
   UpdateRiskAssessmentCommand,
   RemoveRiskAssessmentCommand,
 ]

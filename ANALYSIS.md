@@ -6,12 +6,12 @@ Ce document suit l'évolution technique du projet, les corrections effectuées e
 
 ### Architecture & Synchronisation
 - **Synchronisation Multijoueur (Colyseus) :** Implémentée. Le serveur (`AuditQuest.ts`) gère désormais les messages d'audit et synchronise l'état global.
-- **Réception Réseau :** `Network.ts` met à jour automatiquement le store Redux local de tous les clients lors d'une action d'audit (Missions, Preuves, Journal).
+- **Réception Réseau :** `Network.ts` met à jour automatiquement le store Redux local de tous les clients lors d'une action d'audit (Missions, Preuves, Journal, Résultats, Risques).
 - **Refactorisation Redux :** Suppression des `setTimeout` illégaux dans les reducers de `AuditStore.ts`. Utilisation de thunks ou de gestionnaires d'état propres.
 
 ### Interface Utilisateur (UI/UX)
 - **Intégration du Dashboard :** Le `AuditHUD.tsx` utilise désormais les onglets Material UI (`EvidenceTab`, `FindingsTab`, `RiskTab`) pour afficher les données réelles.
-- **Formulaires Connectés :** `EvidenceCollectionDialog.tsx` envoie maintenant les preuves au serveur au lieu de les stocker localement.
+- **Formulaires Connectés :** `EvidenceCollectionDialog.tsx`, `ComplianceEvaluationDialog.tsx` et `RiskAssessmentDialog.tsx` envoient maintenant les données au serveur au lieu de les stocker localement.
 
 ### Structure des Objets Game
 - **Hiérarchie Auditable :** `Computer.ts` et `NPC.ts` héritent désormais de `AuditableObject`, permettant une gestion standardisée des points d'audit.
@@ -22,14 +22,13 @@ Ce document suit l'évolution technique du projet, les corrections effectuées e
 
 - **Ciblage des Missions (Hard-coded) :** Les missions dans `AuditService.ts` pointent vers des IDs comme `director_desk` qui ne sont pas encore dynamiquement liés aux objets dans Phaser.
 - **Système de Dialogue NPC :** Bien que les NPC soient "auditables", le dialogue est une simple chaîne de texte. Il manque un système de branchement pour que certaines réponses soient automatiquement collectées comme preuves.
-- **Initialisation des Missions :** Actuellement, le serveur et le client initialisent des missions. Cela devrait être centralisé sur le serveur uniquement pour éviter les doublons ou les incohérences.
+- **Initialisation des Missions :** Actuellement, le serveur et le client initialisent des missions. Cela a été partiellement corrigé (le serveur initialise la session), mais une unification totale est préférable.
 - **Mapping des Portraits NPC :** Le mapping des portraits est codé en dur dans `NPC.ts`. Il devrait être configuré via un fichier de données.
 
 ---
 
 ## 3. Choses Incomplètes ou en Cours ⏳
 
-- **Dialogues de Conformité & Risques :** `ComplianceEvaluationDialog.tsx` et `RiskAssessmentDialog.tsx` ne sont pas encore connectés au serveur (envoient encore des données locales).
 - **Validation des Preuves :** Le système permet de collecter des preuves mais pas encore de les "valider" ou de les "rejeter" par un auditeur senior (pourtant prévu dans le schéma).
 - **Rapport Final :** Le générateur de rapport existe mais il n'y a pas d'interface pour le visualiser sans quitter le jeu.
 
