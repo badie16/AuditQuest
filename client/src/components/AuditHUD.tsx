@@ -3,6 +3,9 @@ import { useSelector } from 'react-redux'
 import { RootState } from '../stores'
 import { getPerformanceGrade, getAuditSummary } from '../utils/scoringSystem'
 import { BackgroundMode } from '../../../types/BackgroundMode'
+import EvidenceTab from './EvidenceTab'
+import FindingsTab from './FindingsTab'
+import RiskTab from './RiskTab'
 import './AuditHUD.scss'
 
 interface AuditHUDProps {
@@ -12,7 +15,7 @@ interface AuditHUDProps {
 }
 
 export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSelected }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'missions' | 'findings' | 'journal'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'missions' | 'evidence' | 'findings' | 'risks' | 'journal'>(
     'overview'
   )
 
@@ -64,10 +67,22 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
             Missions ({activeMissions.length})
           </button>
           <button
+            className={`audit-hud__tab ${activeTab === 'evidence' ? 'active' : ''}`}
+            onClick={() => setActiveTab('evidence')}
+          >
+            Evidence ({collectedEvidence.length})
+          </button>
+          <button
             className={`audit-hud__tab ${activeTab === 'findings' ? 'active' : ''}`}
             onClick={() => setActiveTab('findings')}
           >
             Findings ({findings.length})
+          </button>
+          <button
+            className={`audit-hud__tab ${activeTab === 'risks' ? 'active' : ''}`}
+            onClick={() => setActiveTab('risks')}
+          >
+            Risks ({riskAssessments.length})
           </button>
           <button
             className={`audit-hud__tab ${activeTab === 'journal' ? 'active' : ''}`}
@@ -199,38 +214,9 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
             </div>
           )}
 
-          {activeTab === 'findings' && (
-            <div className="audit-findings">
-              <div className="findings-list">
-                {findings.length === 0 ? (
-                  <p className="empty-state">No findings recorded yet.</p>
-                ) : (
-                  findings.map((finding) => (
-                    <div
-                      key={finding.id}
-                      className={`finding-item finding-${finding.status || 'unknown'}`}
-                    >
-                      <div className="finding-header">
-                        <span className={`finding-status finding-${finding.status || 'unknown'}`}>
-                          {finding.status || 'unknown'}
-                        </span>
-                        <span className="finding-mission">{finding.missionId || '-'}</span>
-                      </div>
-                      <div className="finding-justification">{finding.justification || '-'}</div>
-                      <div className="finding-meta">
-                        <span className="finding-auditor">Auditor: {finding.auditorId || '-'}</span>
-                        <span className="finding-time">
-                          {finding.createdAt
-                            ? new Date(finding.createdAt).toLocaleDateString()
-                            : '-'}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
+          {activeTab === 'evidence' && <EvidenceTab />}
+          {activeTab === 'findings' && <FindingsTab />}
+          {activeTab === 'risks' && <RiskTab />}
 
           {activeTab === 'journal' && (
             <div className="audit-journal">

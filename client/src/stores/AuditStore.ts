@@ -52,12 +52,23 @@ const auditSlice = createSlice({
     // Session management
     initializeAuditSession: (
       state,
-      action: PayloadAction<{ sessionId: string; missions: AuditMission[] }>
+      action: PayloadAction<{
+        sessionId: string
+        auditName?: string
+        organization?: string
+        auditScope?: string
+        status?: AuditStatus
+        startDate?: string
+        endDate?: string
+        missions?: AuditMission[]
+      }>
     ) => {
       state.sessionId = action.payload.sessionId
       state.activeMissions = action.payload.missions || []
-      state.status = 'in-progress'
-      state.startedAt = Date.now()
+      state.status = action.payload.status || 'in-progress'
+      state.startedAt = action.payload.startDate
+        ? new Date(action.payload.startDate).getTime()
+        : Date.now()
       state.auditScore = 100
       state.progressPercentage = 0
     },
@@ -163,13 +174,7 @@ const auditSlice = createSlice({
         type: 'evidence_collected',
       })
 
-      addNotification(state, {
-        id: `notif_${Date.now()}`,
-        timestamp: Date.now(),
-        type: 'success',
-        title: 'Evidence Collected',
-        message: `${evidence.type}: ${evidence.description}`,
-      })
+
     },
 
     removeEvidence: (state, action: PayloadAction<string>) => {
@@ -200,13 +205,7 @@ const auditSlice = createSlice({
         state.auditScore = Math.max(0, (state.auditScore || 100) - 10)
       }
 
-      addNotification(state, {
-        id: `notif_${Date.now()}`,
-        timestamp: Date.now(),
-        type: 'warning',
-        title: 'Finding Identified',
-        message: `${finding.status}: ${finding.missionId}`,
-      })
+
     },
 
     updateFinding: (state, action: PayloadAction<ComplianceFinding>) => {
@@ -235,13 +234,7 @@ const auditSlice = createSlice({
         type: 'risk_assessed',
       })
 
-      addNotification(state, {
-        id: `notif_${Date.now()}`,
-        timestamp: Date.now(),
-        type: risk.severity === 'high' ? 'error' : 'warning',
-        title: 'Risk Assessment',
-        message: `${risk.severity.toUpperCase()} - ${risk.recommendation}`,
-      })
+
     },
 
     updateRiskAssessment: (state, action: PayloadAction<RiskAssessment>) => {
@@ -300,14 +293,7 @@ const auditSlice = createSlice({
   },
 })
 
-// Helper function to add notification
-function addNotification(state: AuditState, notification: Notification) {
-  state.notifications = state.notifications || []
-  state.notifications.push(notification)
-  setTimeout(() => {
-    state.notifications = state.notifications?.filter((n) => n.id !== notification.id) || []
-  }, 5000)
-}
+
 
 export const {
   initializeAuditSession,

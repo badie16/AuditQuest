@@ -11,4 +11,9 @@ export enum Message {
   VIDEO_CONNECTED,
   ADD_CHAT_MESSAGE,
   SEND_ROOM_DATA,
+  // Audit Messages
+  START_MISSION,
+  COMPLETE_MISSION,
+  ADD_EVIDENCE,
+  ADD_RISK,
 }

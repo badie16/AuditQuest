@@ -15,9 +15,12 @@ import {
   Chip,
   Stack,
 } from '@mui/material'
-import { useDispatch } from 'react-redux'
-import { addEvidence } from '../stores/AuditStore'
+import { useDispatch, useSelector } from 'react-redux'
+import { addEvidence, closeEvidenceDialog } from '../stores/AuditStore'
 import { AuditPoint } from '../items/AuditableObject'
+import phaserGame from '../PhaserGame'
+import Game from '../scenes/Game'
+import { RootState } from '../stores'
 
 interface EvidenceCollectionDialogProps {
   open: boolean
@@ -42,6 +45,9 @@ export default function EvidenceCollectionDialog({
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<string[]>([])
 
+  const activeMissions = useSelector((state: RootState) => state.audit.activeMissions)
+  const targetId = useSelector((state: RootState) => state.audit.evidenceTargetId)
+
   const handleSelectPoint = (point: AuditPoint) => {
     setSelectedPoint(point)
     setEvidenceType(point.type)
@@ -57,9 +63,6 @@ export default function EvidenceCollectionDialog({
     if (!location.trim()) {
       newErrors.push('Location is required')
     }
-    if (!selectedPoint) {
-      newErrors.push('Please select an audit point or custom evidence')
-    }
 
     setErrors(newErrors)
     return newErrors.length === 0
@@ -68,19 +71,25 @@ export default function EvidenceCollectionDialog({
   const handleCollectEvidence = () => {
     if (!validateForm()) return
 
-    const newEvidence = {
-      id: `evidence_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type: evidenceType,
-      description,
-      location,
-      notes,
-      relatedControls: selectedPoint?.relatedControls || [],
-      collectionTime: Date.now(),
-      objectName,
-    }
+    const game = phaserGame.scene.keys.game as Game
+    const network = game.network
 
-    dispatch(addEvidence(newEvidence))
-    handleClose()
+    if (network) {
+      // Find the mission associated with this object
+      const mission = activeMissions.find(m => m.targetObjectId === targetId)
+      const missionId = mission?.id || 'a5-1' // Fallback for demo
+
+      // Send to server
+      network.addEvidence(
+        missionId,
+        evidenceType,
+        description,
+        location
+      )
+      
+      // Close dialog (the Redux state will be updated by the server response)
+      dispatch(closeEvidenceDialog())
+    }
   }
 
   const handleClose = () => {

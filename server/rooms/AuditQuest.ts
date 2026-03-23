@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import { Room, Client, ServerError } from 'colyseus'
 import { Dispatcher } from '@colyseus/command'
-import { Player, OfficeState, Computer, Whiteboard } from './schema/OfficeState'
+import { Player, OfficeState, Computer, Whiteboard, AuditSessionSchema } from './schema/OfficeState'
 import { Message } from '../../types/Messages'
 import { IRoomData } from '../../types/Rooms'
 import { whiteboardRoomIds } from './schema/OfficeState'
@@ -16,6 +16,11 @@ import {
   WhiteboardRemoveUserCommand,
 } from './commands/WhiteboardUpdateArrayCommand'
 import ChatMessageUpdateCommand from './commands/ChatMessageUpdateCommand'
+
+// Import Audit Commands
+import { InitializeAuditMissionsCommand, StartMissionCommand, CompleteMissionCommand } from './commands/AuditMissionCommand'
+import { CollectEvidenceCommand, VerifyEvidenceCommand, RemoveEvidenceCommand } from './commands/EvidenceCollectionCommand'
+import { CreateRiskAssessmentCommand } from './commands/RiskAssessmentCommand'
 
 export class AuditQuest extends Room<OfficeState> {
   private dispatcher = new Dispatcher(this)
@@ -39,8 +44,17 @@ export class AuditQuest extends Room<OfficeState> {
 
     this.setState(new OfficeState())
 
-    // HARD-CODED: Add 5 computers in a room
-    for (let i = 0; i < 5; i++) {
+    // Initialize Audit Session
+    this.state.auditSession = new AuditSessionSchema()
+    this.state.auditSession.sessionId = `audit-${Date.now()}`
+    this.state.auditSession.status = 'in-progress'
+    this.state.auditSession.startTime = Date.now()
+
+    // Initialize Missions automatically on create
+    this.dispatcher.dispatch(new InitializeAuditMissionsCommand(), {})
+
+    // HARD-CODED: Add 10 computers in a room (expanded from 5)
+    for (let i = 0; i < 10; i++) {
       this.state.computers.set(String(i), new Computer())
     }
 
@@ -48,6 +62,64 @@ export class AuditQuest extends Room<OfficeState> {
     for (let i = 0; i < 3; i++) {
       this.state.whiteboards.set(String(i), new Whiteboard())
     }
+
+    // --- AUDIT MESSAGES ---
+
+    // when receiving startMission message
+    this.onMessage(Message.START_MISSION, (client, message: { missionId: string }) => {
+      this.dispatcher.dispatch(new StartMissionCommand(), {
+        client,
+        missionId: message.missionId,
+      })
+    })
+
+    // when receiving completeMission message
+    this.onMessage(Message.COMPLETE_MISSION, (client, message: { 
+      missionId: string, 
+      compliance: 'compliant' | 'non-compliant' | 'partial',
+      justification: string
+    }) => {
+      this.dispatcher.dispatch(new CompleteMissionCommand(), {
+        client,
+        missionId: message.missionId,
+        compliance: message.compliance,
+        justification: message.justification,
+      })
+    })
+
+    // when receiving addEvidence message
+    this.onMessage(Message.ADD_EVIDENCE, (client, message: { 
+      missionId: string,
+      type: 'document' | 'log' | 'config' | 'interview' | 'observation',
+      description: string,
+      location: string
+    }) => {
+      this.dispatcher.dispatch(new CollectEvidenceCommand(), {
+        client,
+        missionId: message.missionId,
+        type: message.type,
+        description: message.description,
+        location: message.location,
+      })
+    })
+
+    // when receiving addRisk message
+    this.onMessage(Message.ADD_RISK, (client, message: {
+      findingId: string,
+      probability: 'low' | 'medium' | 'high',
+      impact: 'low' | 'medium' | 'high',
+      recommendation: string
+    }) => {
+      this.dispatcher.dispatch(new CreateRiskAssessmentCommand(), {
+        client,
+        findingId: message.findingId,
+        probability: message.probability,
+        impact: message.impact,
+        recommendation: message.recommendation,
+      })
+    })
+
+    // --- OFFICE MESSAGES ---
 
     // when a player connect to a computer, add to the computer connectedUser array
     this.onMessage(Message.CONNECT_TO_COMPUTER, (client, message: { computerId: string }) => {

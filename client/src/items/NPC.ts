@@ -1,11 +1,11 @@
 import { ItemType } from '../../../types/Items'
 import store from '../stores'
-import Item from './Item'
+import AuditableObject from './AuditableObject'
 import { openDialogue } from '../stores/DialogueStore'
 import { sittingShiftData } from '../characters/Player'
 import Chair from './Chair'
 
-export default class NPC extends Item {
+export default class NPC extends AuditableObject {
   npcName: string
   dialogueText: string
   npcTexture: string

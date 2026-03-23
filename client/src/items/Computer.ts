@@ -1,10 +1,10 @@
 import { ItemType } from '../../../types/Items'
 import store from '../stores'
-import Item from './Item'
+import AuditableObject from './AuditableObject'
 import Network from '../services/Network'
 import { openComputerDialog } from '../stores/ComputerStore'
 
-export default class Computer extends Item {
+export default class Computer extends AuditableObject {
   id?: string
   currentUsers = new Set<string>()
 
