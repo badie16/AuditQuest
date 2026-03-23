@@ -1,24 +1,27 @@
 import { Command } from '@colyseus/command'
 import { OfficeState } from '../schema/OfficeState'
 import { MissionSchema, JournalEntrySchema, ComplianceFindingSchema } from '../schema/AuditState'
-import { ISO_27002_CONTROLS } from '../../../types/AuditTypes'
+import { AUDIT_MISSIONS } from '../../../types/AuditData'
 import { v4 as uuid } from 'uuid'
 
 export class InitializeAuditMissionsCommand extends Command<OfficeState> {
   execute() {
-    // Initialize audit missions from ISO 27002 controls
-    ISO_27002_CONTROLS.forEach((control) => {
+    // Initialize audit missions from shared AUDIT_MISSIONS data
+    AUDIT_MISSIONS.forEach((data) => {
       const mission = new MissionSchema()
-      mission.id = control.id
-      mission.name = control.name
-      mission.description = control.description
-      mission.isoControl = control.id
-      mission.zone = control.zone
+      mission.id = data.id || uuid()
+      mission.name = data.title || ''
+      mission.description = data.description || ''
+      mission.isoControl = data.controlId || ''
+      mission.zone = data.category || 'office'
       mission.status = 'pending'
-      mission.priority = ['A.5.1', 'A.9.1', 'A.11.1'].includes(control.id) ? 'high' : 'medium'
+      mission.priority = data.priority || 'medium'
+      mission.targetObjectId = data.targetObjectId || ''
+      mission.targetRoom = data.targetRoom || ''
       
-      const requirements = generateEvidenceRequirements(control.id)
-      requirements.forEach(req => mission.evidenceRequired.push(req))
+      if (data.evidenceRequired) {
+        data.evidenceRequired.forEach(req => mission.evidenceRequired.push(req))
+      }
       
       mission.createdAt = Date.now()
 

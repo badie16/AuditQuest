@@ -21,6 +21,8 @@ export class MissionSchema extends Schema implements AuditMission {
   @type('string') compliance?: 'compliant' | 'non-compliant' | 'partial'
   @type('string') justification?: string
   @type('string') priority: 'low' | 'medium' | 'high' = 'medium'
+  @type('string') targetObjectId = ''
+  @type('string') targetRoom = ''
   @type('number') createdAt = 0
   @type('number') completedAt?: number
 }

@@ -10,6 +10,7 @@ export default class NPC extends AuditableObject {
   dialogueText: string
   npcTexture: string
   portrait: string
+  targetObjectId?: string
 
   constructor(
     scene: Phaser.Scene,

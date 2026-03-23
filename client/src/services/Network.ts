@@ -124,6 +124,8 @@ export default class Network {
         assignedTo: '',
         createdAt: new Date(mission.createdAt).toISOString(),
         dueDate: '',
+        targetObjectId: mission.targetObjectId,
+        targetRoom: mission.targetRoom,
       }))
 
       mission.onChange = (changes) => {

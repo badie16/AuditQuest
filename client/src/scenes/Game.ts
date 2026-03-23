@@ -22,6 +22,7 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
+import { NPCS_DATA } from '../../../types/AuditData'
 
 export default class Game extends Phaser.Scene {
   network!: Network
@@ -36,6 +37,8 @@ export default class Game extends Phaser.Scene {
   private otherPlayerMap = new Map<string, OtherPlayer>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
+  private npcMap = new Map<string, NPC>()
+  private vendingMachineMap = new Map<string, VendingMachine>()
 
   constructor() {
     super('game')
@@ -131,7 +134,10 @@ export default class Game extends Phaser.Scene {
     const vendingMachines = this.physics.add.staticGroup({ classType: VendingMachine })
     const vendingMachineLayer = this.map.getObjectLayer('VendingMachine')
     vendingMachineLayer.objects.forEach((obj, i) => {
-      this.addObjectFromTiled(vendingMachines, obj, 'vendingmachines', 'vendingmachine')
+      const item = this.addObjectFromTiled(vendingMachines, obj, 'vendingmachines', 'vendingmachine') as VendingMachine
+      const customId = obj.properties?.find((p) => p.name === 'id')?.value
+      const id = customId || `vending_${i}`
+      this.vendingMachineMap.set(id, item)
     })
 
     // import other objects from Tiled map to Phaser
@@ -144,44 +150,24 @@ export default class Game extends Phaser.Scene {
 
     this.otherPlayers = this.physics.add.group({ classType: OtherPlayer })
 
-    // Spawn NPCs
+    // Spawn NPCs dynamically from NPCS_DATA
     const npcs = this.physics.add.staticGroup({ classType: NPC })
     const allChairs = chairs.getChildren() as Chair[]
 
-    // Intelligent NPC Assignment: Match PNJ to specific chairs in each room
-    // The chairs indices depend on how they were placed in Tiled.
-    
-    // NPC 1: Office Room (Sarah) - Taking first available chair
-    if (allChairs[20]) {
-      const sarah = npcs.get(0, 0, 'nancy') as NPC
-      sarah.npcName = 'Sarah (Office Admin)'
-      sarah.dialogueText = "Hello! I manage user accounts here. We make sure every new employee is registered correctly in the system."
-      sarah.sit(allChairs[20])
-    }
-    
-    // NPC 2: Meeting Room (Bob) - Taking a chair at the big table
-    if (allChairs[15]) {
-      const bob = npcs.get(0, 0, 'ash') as NPC
-      bob.npcName = 'Bob (Manager)'
-      bob.dialogueText = "Welcome to the meeting room. We were just discussing our internal security organization roles."
-      bob.sit(allChairs[15])
-    }
-    
-    // NPC 3: Break Room (Alice) - Sitting in the lounge area
-    if (allChairs[10]) {
-      const alice = npcs.get(0, 0, 'lucy') as NPC
-      alice.npcName = 'Alice (Employee)'
-      alice.dialogueText = "Oh, hi! I'm just on my break. Security? Yeah, we had some training about not clicking on weird emails lately."
-      alice.sit(allChairs[10])
-    }
-    
-    // NPC 4: Director Office (Director Smith) - Sitting at the head desk
-    if (allChairs[8]) {
-      const smith = npcs.get(0, 0, 'adam') as NPC
-      smith.npcName = 'Director Smith'
-      smith.dialogueText = "I've signed all the latest security policies. You can find them on my desk for your audit."
-      smith.sit(allChairs[8])
-    }
+    NPCS_DATA.forEach((data, index) => {
+      // Find a suitable chair for each NPC based on their data or index
+      // In a real scenario, we might want to specify chair IDs in NPCS_DATA
+      const chairIndex = data.id === 'npc_director' ? 8 : (data.id === 'npc_manager' ? 15 : (data.id === 'npc_hr' ? 10 : 20))
+      
+      if (allChairs[chairIndex]) {
+        const npc = npcs.get(0, 0, data.texture) as NPC
+        npc.npcName = data.name
+        npc.dialogueText = data.dialogue
+        npc.targetObjectId = data.id
+        npc.sit(allChairs[chairIndex])
+        this.npcMap.set(data.id, npc)
+      }
+    })
 
     this.cameras.main.zoom = 1.5
     this.cameras.main.startFollow(this.myPlayer, true)
@@ -333,6 +319,8 @@ export default class Game extends Phaser.Scene {
     // Reset all markers first
     this.computerMap.forEach((computer) => computer.setMissionMarker(false))
     this.whiteboardMap.forEach((whiteboard) => whiteboard.setMissionMarker(false))
+    this.npcMap.forEach((npc) => npc.setMissionMarker(false))
+    this.vendingMachineMap.forEach((vm) => vm.setMissionMarker(false))
 
     // Set markers for objects that have active missions
     activeMissions.forEach((mission) => {
@@ -345,6 +333,14 @@ export default class Game extends Phaser.Scene {
           const whiteboard = this.whiteboardMap.get(mission.targetObjectId)
           if (whiteboard) {
             whiteboard.setMissionMarker(true)
+          }
+          const npc = this.npcMap.get(mission.targetObjectId)
+          if (npc) {
+            npc.setMissionMarker(true)
+          }
+          const vm = this.vendingMachineMap.get(mission.targetObjectId)
+          if (vm) {
+            vm.setMissionMarker(true)
           }
         }
       }
