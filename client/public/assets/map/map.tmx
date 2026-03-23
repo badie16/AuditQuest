@@ -12827,7 +12827,7 @@
  <tileset firstgid="5488" name="vendingmachine" tilewidth="48" tileheight="72" tilecount="1" columns="1">
   <image source="../items/vendingmachine.png" width="48" height="72"/>
  </tileset>
- <layer id="2" name="Ground" width="40" height="30" locked="1">
+ <layer id="2" name="Ground" width="40" height="30">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,29,594,594,594,594,594,594,594,594,594,594,594,594,594,90,0,0,0,0,0,0,
@@ -12861,7 +12861,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,216,0,0,0,0,85,217,217,217,217,217,217,217,217,217,217,217,217,217,217,218
 </data>
  </layer>
- <objectgroup id="3" name="Wall" locked="1">
+ <objectgroup id="3" name="Wall">
   <object id="134" gid="149" x="608" y="512" width="32" height="32"/>
   <object id="135" gid="930" x="576" y="512" width="32" height="32"/>
   <object id="136" gid="930" x="544" y="512" width="32" height="32"/>
@@ -12901,7 +12901,7 @@
   <object id="238" gid="722" x="1024" y="288" width="32" height="32"/>
   <object id="318" gid="149" x="768" y="480" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="4" name="Chair" locked="1">
+ <objectgroup id="4" name="Chair">
   <object id="334" gid="2562" x="320" y="640" width="32" height="64">
    <properties>
     <property name="direction" value="down"/>
@@ -13298,7 +13298,7 @@
   <object id="838" gid="4389" x="1152" y="928" width="32" height="32"/>
   <object id="839" gid="4405" x="1184" y="928" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="19" name="Computer" locked="1">
+ <objectgroup id="19" name="Computer">
   <object id="1269" gid="4680" x="1152" y="544" width="96" height="64"/>
   <object id="1270" gid="4682" x="1056" y="544" width="96" height="64"/>
   <object id="1271" gid="4684" x="960" y="544" width="96" height="64"/>
@@ -13336,7 +13336,7 @@
   <object id="1241" gid="5127" x="320" y="321" width="32" height="32"/>
   <object id="1242" gid="5105" x="256" y="289" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="14" name="VendingMachine" locked="1">
+ <objectgroup id="14" name="VendingMachine">
   <object id="1262" gid="5488" x="378" y="209" width="48" height="72"/>
  </objectgroup>
 </map>
