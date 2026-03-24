@@ -334,7 +334,8 @@ export default class Game extends Phaser.Scene {
 
     // Set markers for objects that have active missions
     activeMissions.forEach((mission) => {
-      if (mission.status === 'not_started' || mission.status === 'in-progress') {
+      // ONLY show markers for IN-PROGRESS missions in the scenario sequence
+      if (mission.status === 'in-progress') {
         if (mission.targetObjectId) {
           const computer = this.computerMap.get(mission.targetObjectId)
           if (computer) {

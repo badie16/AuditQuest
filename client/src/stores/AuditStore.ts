@@ -143,9 +143,32 @@ const auditSlice = createSlice({
       state,
       action: PayloadAction<{ missionId: string; status: AuditStatus }>
     ) => {
-      const mission = state.activeMissions?.find((m) => m.id === action.payload.missionId)
+      const { missionId, status } = action.payload
+      
+      // Look in active missions
+      const missionIdx = state.activeMissions?.findIndex((m) => m.id === missionId)
+      
+      if (missionIdx !== -1 && state.activeMissions) {
+        const mission = state.activeMissions[missionIdx]
+        mission.status = status
+        
+        if (status === 'completed') {
+          mission.completedAt = Date.now()
+          state.completedMissions = state.completedMissions || []
+          state.completedMissions.push(mission)
+          state.activeMissions.splice(missionIdx, 1)
+        }
+      }
+    },
+
+    updateMissionEvidence: (
+      state,
+      action: PayloadAction<{ missionId: string; evidenceCount: number }>
+    ) => {
+      const { missionId, evidenceCount } = action.payload
+      const mission = state.activeMissions?.find((m) => m.id === missionId)
       if (mission) {
-        mission.status = action.payload.status
+        mission.evidenceCollected = evidenceCount
       }
     },
 
@@ -302,6 +325,7 @@ export const {
   startMission,
   completeMission,
   updateMissionStatus,
+  updateMissionEvidence,
   addEvidence,
   removeEvidence,
   addFinding,

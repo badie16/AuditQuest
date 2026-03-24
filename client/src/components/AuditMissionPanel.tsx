@@ -28,14 +28,13 @@ interface ExpandMoreIconProps {
 }
 
 export default function AuditMissionPanel() {
-  const missions = useSelector((state: RootState) => state.audit.missions)
+  const activeMissions = useSelector((state: RootState) => state.audit.activeMissions)
+  const completedMissions = useSelector((state: RootState) => state.audit.completedMissions)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const activeMissions = missions.filter((m) => m.status !== 'completed')
-  const completedMissions = missions.filter((m) => m.status === 'completed')
-
+  const allMissions = [...activeMissions, ...completedMissions]
   const completionPercentage =
-    missions.length > 0 ? (completedMissions.length / missions.length) * 100 : 0
+    allMissions.length > 0 ? (completedMissions.length / allMissions.length) * 100 : 0
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -170,7 +169,7 @@ export default function AuditMissionPanel() {
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
           <Typography variant="h6">Audit Missions Progress</Typography>
           <Typography variant="body2" color="textSecondary">
-            {completedMissions.length} / {missions.length} completed
+            {completedMissions.length} / {allMissions.length} completed
           </Typography>
         </Stack>
         <LinearProgress
@@ -202,7 +201,7 @@ export default function AuditMissionPanel() {
         </Box>
       )}
 
-      {missions.length === 0 && (
+      {allMissions.length === 0 && (
         <Box sx={{ p: 2, textAlign: 'center', color: 'textSecondary' }}>
           <Typography variant="body2">
             No missions available. Start an audit session to begin.

@@ -26,6 +26,7 @@ import {
   addEvidence,
   addJournalEntry,
   updateMissionStatus,
+  updateMissionEvidence,
   addFinding,
   addRiskAssessment,
 } from '../stores/AuditStore'
@@ -142,6 +143,15 @@ export default class Network {
             )
           }
         })
+      }
+
+      mission.collectedEvidence.onAdd = (evId, index) => {
+        store.dispatch(
+          updateMissionEvidence({ 
+            missionId: mission.id, 
+            evidenceCount: mission.collectedEvidence.length 
+          })
+        )
       }
     }
 

@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid'
 export class InitializeAuditMissionsCommand extends Command<OfficeState> {
   execute() {
     // Initialize audit missions from shared AUDIT_MISSIONS data
+    let first = true
     AUDIT_MISSIONS.forEach((data) => {
       const mission = new MissionSchema()
       mission.id = data.id || uuid()
@@ -14,7 +15,11 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
       mission.description = data.description || ''
       mission.isoControl = data.controlId || ''
       mission.zone = data.category || 'office'
-      mission.status = 'pending'
+      
+      // Story logic: first mission is in-progress, others are pending
+      mission.status = first ? 'in-progress' : 'pending'
+      first = false
+      
       mission.priority = data.priority || 'medium'
       mission.targetObjectId = data.targetObjectId || ''
       mission.targetRoom = data.targetRoom || ''
@@ -97,6 +102,18 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     mission.collectedEvidence.forEach(evId => finding.evidence.push(evId))
 
     this.state.findings.set(finding.id, finding)
+
+    // Unlock next mission in scenario
+    let foundNext = false
+    this.state.missions.forEach((m) => {
+      if (!foundNext && m.status === 'pending') {
+        m.status = 'in-progress'
+        foundNext = true
+        
+        // Notification for new mission
+        console.log(`[Audit] Scenario progress: Next mission unlocked: ${m.name}`)
+      }
+    })
 
     // Add journal entry
     const journalEntry = new JournalEntrySchema()
