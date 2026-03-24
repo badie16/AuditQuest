@@ -19,7 +19,7 @@ export const AUDIT_MISSIONS: Partial<AuditMission>[] = [
     priority: 'high' as Priority,
     category: 'POLICIES',
     evidenceRequired: ['Information Security Policy Document', 'Policy Approval Records', 'Distribution Evidence'],
-    targetObjectId: 'director_desk',
+    targetObjectId: 'npc_director',
     targetRoom: 'Director Office',
   },
   {
@@ -30,7 +30,7 @@ export const AUDIT_MISSIONS: Partial<AuditMission>[] = [
     priority: 'high' as Priority,
     category: 'ORGANIZATION',
     evidenceRequired: ['Organizational Chart', 'Role Definitions', 'Responsibility Matrix'],
-    targetObjectId: 'meeting_table',
+    targetObjectId: 'npc_manager',
     targetRoom: 'Meeting Room',
   },
   {
@@ -41,7 +41,7 @@ export const AUDIT_MISSIONS: Partial<AuditMission>[] = [
     priority: 'medium' as Priority,
     category: 'HUMAN RESOURCE',
     evidenceRequired: ['User Security Agreement', 'Training Records', 'Acceptable Use Policy'],
-    targetObjectId: 'vending_machine',
+    targetObjectId: 'npc_hr',
     targetRoom: 'Break Room',
   },
   {

@@ -36,6 +36,7 @@ export default class Game extends Phaser.Scene {
   private playerSelector!: Phaser.GameObjects.Zone
   private otherPlayers!: Phaser.Physics.Arcade.Group
   private otherPlayerMap = new Map<string, OtherPlayer>()
+  private itemMap = new Map<string, Item>()
   computerMap = new Map<string, Computer>()
   private whiteboardMap = new Map<string, Whiteboard>()
   private npcMap = new Map<string, NPC>()
@@ -113,6 +114,7 @@ export default class Game extends Phaser.Scene {
       const id = customId || `${i}`
       item.id = id
       this.computerMap.set(id, item)
+      this.itemMap.set(id, item)
     })
 
     // import whiteboards objects from Tiled map to Phaser
@@ -129,6 +131,7 @@ export default class Game extends Phaser.Scene {
       const id = customId || `${i}`
       item.id = id
       this.whiteboardMap.set(id, item)
+      this.itemMap.set(id, item)
     })
 
     // import vending machine objects from Tiled map to Phaser
@@ -138,7 +141,9 @@ export default class Game extends Phaser.Scene {
       const item = this.addObjectFromTiled(vendingMachines, obj, 'vendingmachines', 'vendingmachine') as VendingMachine
       const customId = obj.properties?.find((p) => p.name === 'id')?.value
       const id = customId || `vending_${i}`
+      item.id = id
       this.vendingMachineMap.set(id, item)
+      this.itemMap.set(id, item)
     })
 
     // import other objects from Tiled map to Phaser
@@ -176,6 +181,7 @@ export default class Game extends Phaser.Scene {
 
         npc.sit(allChairs[chairIndex])
         this.npcMap.set(data.id, npc)
+        this.itemMap.set(data.id, npc)
       }
     })
 
@@ -327,31 +333,21 @@ export default class Game extends Phaser.Scene {
     const activeMissions = store.getState().audit.activeMissions
 
     // Reset all markers first
-    this.computerMap.forEach((computer) => computer.setMissionMarker(false))
-    this.whiteboardMap.forEach((whiteboard) => whiteboard.setMissionMarker(false))
-    this.npcMap.forEach((npc) => npc.setMissionMarker(false))
-    this.vendingMachineMap.forEach((vm) => vm.setMissionMarker(false))
+    this.itemMap.forEach((item) => item.setMissionMarker(false))
 
     // Set markers for objects that have active missions
     activeMissions.forEach((mission) => {
       // ONLY show markers for IN-PROGRESS missions in the scenario sequence
       if (mission.status === 'in-progress') {
         if (mission.targetObjectId) {
-          const computer = this.computerMap.get(mission.targetObjectId)
-          if (computer) {
-            computer.setMissionMarker(true)
-          }
-          const whiteboard = this.whiteboardMap.get(mission.targetObjectId)
-          if (whiteboard) {
-            whiteboard.setMissionMarker(true)
-          }
-          const npc = this.npcMap.get(mission.targetObjectId)
-          if (npc) {
-            npc.setMissionMarker(true)
-          }
-          const vm = this.vendingMachineMap.get(mission.targetObjectId)
-          if (vm) {
-            vm.setMissionMarker(true)
+          const item = this.itemMap.get(mission.targetObjectId)
+          if (item) {
+            item.setMissionMarker(true)
+            console.log(`[Audit] Mission marker set for: ${mission.targetObjectId}`)
+          } else {
+            // Fallback for demo: if it's a numeric ID, it's a computer
+            const computer = this.computerMap.get(mission.targetObjectId)
+            if (computer) computer.setMissionMarker(true)
           }
         }
       }

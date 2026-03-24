@@ -324,33 +324,33 @@ export default class Network {
   }
 
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
     }
   }
 
   updatePlayerName(currentName: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
     }
   }
 
   readyToConnect() {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.READY_TO_CONNECT)
     }
     phaserEvents.emit(Event.MY_PLAYER_READY)
   }
 
   videoConnected() {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.VIDEO_CONNECTED)
     }
     phaserEvents.emit(Event.MY_PLAYER_VIDEO_CONNECTED)
   }
 
   playerStreamDisconnect(id: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.DISCONNECT_STREAM, { clientId: id })
     }
     this.webRTC?.deleteVideoStream(id)
@@ -359,25 +359,25 @@ export default class Network {
   // --- AUDIT ACTIONS ---
 
   startMission(missionId: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.START_MISSION, { missionId })
     }
   }
 
   completeMission(missionId: string, compliance: string, justification: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.COMPLETE_MISSION, { missionId, compliance, justification })
     }
   }
 
   addEvidence(missionId: string, type: string, description: string, location: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.ADD_EVIDENCE, { missionId, type, description, location })
     }
   }
 
   addRisk(findingId: string, probability: string, impact: string, recommendation: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.ADD_RISK, { findingId, probability, impact, recommendation })
     }
   }
@@ -385,37 +385,37 @@ export default class Network {
   // --- ITEM ACTIONS ---
 
   connectToComputer(id: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.CONNECT_TO_COMPUTER, { computerId: id })
     }
   }
 
   disconnectFromComputer(id: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.DISCONNECT_FROM_COMPUTER, { computerId: id })
     }
   }
 
   connectToWhiteboard(id: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.CONNECT_TO_WHITEBOARD, { whiteboardId: id })
     }
   }
 
   disconnectFromWhiteboard(id: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.DISCONNECT_FROM_WHITEBOARD, { whiteboardId: id })
     }
   }
 
   onStopScreenShare(id: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.STOP_SCREEN_SHARE, { computerId: id })
     }
   }
 
   addChatMessage(content: string) {
-    if (this.room?.connection?.readyState === 1) {
+    if (this.room) {
       this.room.send(Message.ADD_CHAT_MESSAGE, { content: content })
     }
   }
