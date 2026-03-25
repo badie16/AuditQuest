@@ -16,15 +16,15 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
 
     // add mission marker (initially invisible)
     this.missionMarker = this.scene.add
-      .text(this.x, this.y - this.height * 0.5 - 10, '!', {
-        fontSize: '24px',
-        color: '#ff0000',
-        stroke: '#ffffff',
-        strokeThickness: 4,
+      .text(this.x, this.y - this.height * 0.5 - 20, '⭐', {
+        fontSize: '32px',
+        color: '#FFD700',
+        stroke: '#000000',
+        strokeThickness: 6,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
-      .setDepth(10000)
+      .setDepth(50000)
       .setVisible(false)
 
     // Add a simple float animation to the marker
@@ -40,7 +40,24 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
 
   setMissionMarker(visible: boolean) {
     this.missionMarker.setVisible(visible)
-    this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 10)
+  }
+
+  setMissionStatus(status: 'none' | 'active' | 'completed') {
+    if (status === 'none') {
+      this.missionMarker.setVisible(false)
+      return
+    }
+
+    this.missionMarker.setVisible(true)
+    this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 20)
+    
+    if (status === 'active') {
+      this.missionMarker.setText('⭐') // Star for active mission
+      this.missionMarker.setColor('#FFD700') // Gold
+    } else if (status === 'completed') {
+      this.missionMarker.setText('✅') // Checkmark for completed/evidence collected
+      this.missionMarker.setColor('#00FF00') // Green
+    }
   }
 
   // add texts into dialog box container

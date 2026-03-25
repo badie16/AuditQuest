@@ -16,6 +16,7 @@ export class MissionSchema extends Schema implements AuditMission {
   @type('string') isoControl = ''
   @type('string') zone = ''
   @type('string') status: 'pending' | 'in-progress' | 'completed' = 'pending'
+  @type(['string']) prerequisites = new ArraySchema<string>()
   @type(['string']) evidenceRequired = new ArraySchema<string>()
   @type(['string']) collectedEvidence = new ArraySchema<string>()
   @type('string') compliance?: 'compliant' | 'non-compliant' | 'partial'

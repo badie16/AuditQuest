@@ -100,16 +100,30 @@ export default function DialogueDialog() {
     const game = phaserGame.scene.keys.game as Game
     const network = game.network
 
+    console.log('[Audit] Dialogue collect clicked. NPC ID:', npcId)
+    console.log('[Audit] Active missions in store:', activeMissions.map(m => `ID: ${m.id}, Target: ${m.targetObjectId}`))
+
     // Find if this NPC is a target for any active mission
     const mission = activeMissions.find(m => m.targetObjectId === npcId)
     
     if (network) {
+      console.log('[Audit] Sending addEvidence for mission:', mission?.id || 'general')
       network.addEvidence(
         mission?.id || 'general',
         'interview',
         `Interview with ${title}: "${content}"`,
         'Office'
       )
+
+      // If this was a target NPC for a mission, auto-validate it as compliant for smoother demo flow
+      if (mission) {
+        console.log('[Audit] Auto-completing mission:', mission.id)
+        network.completeMission(
+            mission.id,
+            'compliant',
+            `Validated via interview with ${title}. Information provided matches requirements.`
+        )
+      }
     }
     dispatch(closeDialogue())
   }

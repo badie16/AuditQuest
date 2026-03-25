@@ -64,13 +64,17 @@ const auditSlice = createSlice({
       }>
     ) => {
       state.sessionId = action.payload.sessionId
-      state.activeMissions = action.payload.missions || []
+      // ONLY update missions if they are explicitly provided in the payload
+      if (action.payload.missions) {
+        state.activeMissions = action.payload.missions
+      }
       state.status = action.payload.status || 'in-progress'
       state.startedAt = action.payload.startDate
         ? new Date(action.payload.startDate).getTime()
         : Date.now()
-      state.auditScore = 100
-      state.progressPercentage = 0
+      // Don't reset score/progress if session is already initialized
+      if (!state.auditScore) state.auditScore = 100
+      if (!state.progressPercentage) state.progressPercentage = 0
     },
 
     completeAuditSession: (state) => {
@@ -117,7 +121,10 @@ const auditSlice = createSlice({
       mission.completedAt = Date.now()
 
       state.completedMissions = state.completedMissions || []
-      state.completedMissions.push(mission)
+      // Avoid duplicates
+      if (!state.completedMissions.find(m => m.id === mission.id)) {
+        state.completedMissions.push(mission)
+      }
 
       state.activeMissions = state.activeMissions?.filter((m) => m.id !== mission.id) || []
       state.currentMission = undefined
@@ -155,8 +162,17 @@ const auditSlice = createSlice({
         if (status === 'completed') {
           mission.completedAt = Date.now()
           state.completedMissions = state.completedMissions || []
-          state.completedMissions.push(mission)
+          // Avoid duplicates in completed list
+          if (!state.completedMissions.find(m => m.id === missionId)) {
+            state.completedMissions.push(mission)
+          }
           state.activeMissions.splice(missionIdx, 1)
+        }
+      } else {
+        // Check if it's already in completed missions (maybe redundant but safe)
+        const completedMission = state.completedMissions?.find(m => m.id === missionId)
+        if (completedMission) {
+            completedMission.status = status
         }
       }
     },
@@ -166,9 +182,15 @@ const auditSlice = createSlice({
       action: PayloadAction<{ missionId: string; evidenceCount: number }>
     ) => {
       const { missionId, evidenceCount } = action.payload
-      const mission = state.activeMissions?.find((m) => m.id === missionId)
-      if (mission) {
-        mission.evidenceCollected = evidenceCount
+      // Check active missions
+      const activeMission = state.activeMissions?.find((m) => m.id === missionId)
+      if (activeMission) {
+        activeMission.evidenceCollected = evidenceCount
+      }
+      // Also check completed missions just in case
+      const completedMission = state.completedMissions?.find((m) => m.id === missionId)
+      if (completedMission) {
+        completedMission.evidenceCollected = evidenceCount
       }
     },
 
@@ -178,12 +200,26 @@ const auditSlice = createSlice({
       if (!evidence) return
 
       state.collectedEvidence = state.collectedEvidence || []
-      state.collectedEvidence.push(evidence)
+      // Avoid duplicates
+      if (!state.collectedEvidence.find(e => e.id === evidence.id)) {
+        state.collectedEvidence.push(evidence)
+      }
 
-      const mission = state.activeMissions?.find((m) => m.id === evidence.missionId)
-      if (mission) {
-        mission.collectedEvidence = mission.collectedEvidence || []
-        mission.collectedEvidence.push(evidence.id)
+      // Update evidence list in BOTH active and completed missions
+      const activeMission = state.activeMissions?.find((m) => m.id === evidence.missionId)
+      if (activeMission) {
+        activeMission.collectedEvidence = activeMission.collectedEvidence || []
+        if (!activeMission.collectedEvidence.includes(evidence.id)) {
+            activeMission.collectedEvidence.push(evidence.id)
+        }
+      }
+      
+      const completedMission = state.completedMissions?.find((m) => m.id === evidence.missionId)
+      if (completedMission) {
+        completedMission.collectedEvidence = completedMission.collectedEvidence || []
+        if (!completedMission.collectedEvidence.includes(evidence.id)) {
+            completedMission.collectedEvidence.push(evidence.id)
+        }
       }
 
       state.auditJournal = state.auditJournal || []
@@ -196,8 +232,6 @@ const auditSlice = createSlice({
         missionId: evidence.missionId,
         type: 'evidence_collected',
       })
-
-
     },
 
     removeEvidence: (state, action: PayloadAction<string>) => {
@@ -311,7 +345,13 @@ const auditSlice = createSlice({
 
     addMission: (state, action: PayloadAction<AuditMission>) => {
       state.activeMissions = state.activeMissions || []
-      if (action.payload) state.activeMissions.push(action.payload)
+      if (action.payload) {
+        // Avoid duplicates
+        if (!state.activeMissions.find(m => m.id === action.payload.id) && 
+            !state.completedMissions?.find(m => m.id === action.payload.id)) {
+          state.activeMissions.push(action.payload)
+        }
+      }
     },
   },
 })

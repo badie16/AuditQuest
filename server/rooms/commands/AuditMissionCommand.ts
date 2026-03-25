@@ -16,9 +16,12 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
       mission.isoControl = data.controlId || ''
       mission.zone = data.category || 'office'
       
-      // Story logic: first mission is in-progress, others are pending
-      mission.status = first ? 'in-progress' : 'pending'
-      first = false
+      // Story logic: missions with no prerequisites are in-progress, others are pending
+      if (data.prerequisites && data.prerequisites.length > 0) {
+        mission.status = 'pending'
+      } else {
+        mission.status = 'in-progress'
+      }
       
       mission.priority = data.priority || 'medium'
       mission.targetObjectId = data.targetObjectId || ''
@@ -26,6 +29,10 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
       
       if (data.evidenceRequired) {
         data.evidenceRequired.forEach(req => mission.evidenceRequired.push(req))
+      }
+
+      if (data.prerequisites) {
+        data.prerequisites.forEach(req => mission.prerequisites.push(req))
       }
       
       mission.createdAt = Date.now()
@@ -103,15 +110,30 @@ export class CompleteMissionCommand extends Command<OfficeState> {
 
     this.state.findings.set(finding.id, finding)
 
-    // Unlock next mission in scenario
-    let foundNext = false
+    // Unlock next missions based on prerequisites
     this.state.missions.forEach((m) => {
-      if (!foundNext && m.status === 'pending') {
-        m.status = 'in-progress'
-        foundNext = true
-        
-        // Notification for new mission
-        console.log(`[Audit] Scenario progress: Next mission unlocked: ${m.name}`)
+      if (m.status === 'pending') {
+        // Check if all prerequisites are completed
+        const allPrereqsMet = m.prerequisites.every((prereqId) => {
+          const prereqMission = this.state.missions.get(prereqId)
+          return prereqMission && prereqMission.status === 'completed'
+        })
+
+        if (allPrereqsMet) {
+          m.status = 'in-progress'
+          
+          // Notification for new mission
+          console.log(`[Audit] Scenario progress: Next mission unlocked: ${m.name}`)
+          
+          // Add journal entry for unlock
+          const unlockEntry = new JournalEntrySchema()
+          unlockEntry.id = uuid()
+          unlockEntry.timestamp = Date.now()
+          unlockEntry.auditorId = 'system'
+          unlockEntry.action = `Mission Unlocked: ${m.name}`
+          unlockEntry.type = 'mission_started'
+          this.state.journal.push(unlockEntry)
+        }
       }
     })
 

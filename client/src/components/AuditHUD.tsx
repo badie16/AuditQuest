@@ -6,6 +6,7 @@ import { BackgroundMode } from '../../../types/BackgroundMode'
 import EvidenceTab from './EvidenceTab'
 import FindingsTab from './FindingsTab'
 import RiskTab from './RiskTab'
+import AuditMissionPanel from './AuditMissionPanel'
 import './AuditHUD.scss'
 
 interface AuditHUDProps {
@@ -152,67 +153,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
             </div>
           )}
 
-          {activeTab === 'missions' && (
-            <div className="audit-missions">
-              <div className="missions-list">
-                <h3>Active Missions</h3>
-                {activeMissions.length === 0 ? (
-                  <p className="empty-state">
-                    No active missions. Start by selecting a control to audit.
-                  </p>
-                ) : (
-                  activeMissions.map((mission) => (
-                    <div
-                      key={mission.id}
-                      className="mission-item"
-                      onClick={() => onMissionSelected?.(mission.id)}
-                    >
-                      <div className="mission-info">
-                        <div className="mission-code">{mission.controlId}</div>
-                        <div className="mission-name">{mission.title}</div>
-                        <div className="mission-status">
-                          <span className={`status-badge status-${mission.status || 'pending'}`}>
-                            {mission.status || 'pending'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mission-progress">
-                        <div className="evidence-progress">
-                          {mission.collectedEvidence?.length || 0}/
-                          {mission.evidenceRequired?.length || 0} Evidence
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="missions-list">
-                <h3>Completed Missions</h3>
-                {completedMissions.length === 0 ? (
-                  <p className="empty-state">No completed missions yet.</p>
-                ) : (
-                  completedMissions.map((mission) => (
-                    <div key={mission.id} className="mission-item completed">
-                      <div className="mission-info">
-                        <div className="mission-code">{mission.isoControl}</div>
-                        <div className="mission-name">{mission.name}</div>
-                        <div className="mission-status">
-                          <span
-                            className={`compliance-badge compliance-${
-                              mission.compliance || 'unknown'
-                            }`}
-                          >
-                            {mission.compliance || 'unknown'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
+          {activeTab === 'missions' && <AuditMissionPanel />}
 
           {activeTab === 'evidence' && <EvidenceTab />}
           {activeTab === 'findings' && <FindingsTab />}

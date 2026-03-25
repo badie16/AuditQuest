@@ -110,8 +110,7 @@ export default class Game extends Phaser.Scene {
       const item = this.addObjectFromTiled(computers, obj, 'computers', 'computer') as Computer
       item.setDepth(item.y + item.height * 0.27)
       // Check for a custom "id" property in Tiled, otherwise use the index
-      const customId = obj.properties?.find((p) => p.name === 'id')?.value
-      const id = customId || `${i}`
+      const id = obj.properties?.find((p) => p.name === 'id')?.value?.toString() || `${i}`
       item.id = id
       this.computerMap.set(id, item)
       this.itemMap.set(id, item)
@@ -127,8 +126,7 @@ export default class Game extends Phaser.Scene {
         'whiteboards',
         'whiteboard'
       ) as Whiteboard
-      const customId = obj.properties?.find((p) => p.name === 'id')?.value
-      const id = customId || `${i}`
+      const id = obj.properties?.find((p) => p.name === 'id')?.value?.toString() || `${i}`
       item.id = id
       this.whiteboardMap.set(id, item)
       this.itemMap.set(id, item)
@@ -139,8 +137,7 @@ export default class Game extends Phaser.Scene {
     const vendingMachineLayer = this.map.getObjectLayer('VendingMachine')
     vendingMachineLayer.objects.forEach((obj, i) => {
       const item = this.addObjectFromTiled(vendingMachines, obj, 'vendingmachines', 'vendingmachine') as VendingMachine
-      const customId = obj.properties?.find((p) => p.name === 'id')?.value
-      const id = customId || `vending_${i}`
+      const id = obj.properties?.find((p) => p.name === 'id')?.value?.toString() || `vending_${i}`
       item.id = id
       this.vendingMachineMap.set(id, item)
       this.itemMap.set(id, item)
@@ -216,6 +213,9 @@ export default class Game extends Phaser.Scene {
     this.network.onItemUserAdded(this.handleItemUserAdded, this)
     this.network.onItemUserRemoved(this.handleItemUserRemoved, this)
     this.network.onChatMessageAdded(this.handleChatMessageAdded, this)
+
+    // Initial sync
+    this.syncMissions()
   }
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
@@ -331,23 +331,35 @@ export default class Game extends Phaser.Scene {
 
   private syncMissions() {
     const activeMissions = store.getState().audit.activeMissions
+    console.log('[Audit] syncMissions called. Active missions:', activeMissions.length)
 
     // Reset all markers first
-    this.itemMap.forEach((item) => item.setMissionMarker(false))
+    this.itemMap.forEach((item) => item.setMissionStatus('none'))
+    this.npcMap.forEach((item) => item.setMissionStatus('none'))
+    this.computerMap.forEach((item) => item.setMissionStatus('none'))
+    this.whiteboardMap.forEach((item) => item.setMissionStatus('none'))
+    this.vendingMachineMap.forEach((item) => item.setMissionStatus('none'))
 
     // Set markers for objects that have active missions
     activeMissions.forEach((mission) => {
+      console.log(`[Audit] Checking mission ${mission.id} status: ${mission.status} target: ${mission.targetObjectId}`)
       // ONLY show markers for IN-PROGRESS missions in the scenario sequence
       if (mission.status === 'in-progress') {
         if (mission.targetObjectId) {
-          const item = this.itemMap.get(mission.targetObjectId)
+          // Check all maps for the target object
+          const item = this.itemMap.get(mission.targetObjectId) || 
+                       this.npcMap.get(mission.targetObjectId) ||
+                       this.computerMap.get(mission.targetObjectId) ||
+                       this.whiteboardMap.get(mission.targetObjectId) ||
+                       this.vendingMachineMap.get(mission.targetObjectId)
+
+          const hasEvidence = mission.evidenceCollected > 0
+
           if (item) {
-            item.setMissionMarker(true)
-            console.log(`[Audit] Mission marker set for: ${mission.targetObjectId}`)
+            console.log(`[Audit] SUCCESS: Found item for target ${mission.targetObjectId}. Setting status.`)
+            item.setMissionStatus(hasEvidence ? 'completed' : 'active')
           } else {
-            // Fallback for demo: if it's a numeric ID, it's a computer
-            const computer = this.computerMap.get(mission.targetObjectId)
-            if (computer) computer.setMissionMarker(true)
+            console.warn(`[Audit] WARNING: Target item ${mission.targetObjectId} not found in any map!`)
           }
         }
       }

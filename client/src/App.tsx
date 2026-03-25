@@ -17,11 +17,13 @@ import Chat from './components/Chat'
 import HelperButtonGroup from './components/HelperButtonGroup'
 import MobileVirtualJoystick from './components/MobileVirtualJoystick'
 import AuditHUD from './components/AuditHUD'
+import NotificationToast from './components/NotificationToast'
 import EvidenceCollectionDialog from './components/EvidenceCollectionDialog'
 import DialogueDialog from './components/DialogueDialog'
 import VideoControls from './components/VideoControls'
 import { closeEvidenceDialog } from './stores/AuditStore'
 import { useAppDispatch } from './hooks'
+import { AUDIT_POINTS_DATA } from '../../types/AuditData'
 
 const Backdrop = styled.div`
   position: absolute;
@@ -74,6 +76,7 @@ function App() {
   const whiteboardDialogOpen = useAppSelector((state) => state.whiteboard.whiteboardDialogOpen)
   const evidenceDialogOpen = useAppSelector((state) => state.audit.evidenceDialogOpen)
   const evidenceTargetName = useAppSelector((state) => state.audit.evidenceTargetName)
+  const evidenceTargetId = useAppSelector((state) => state.audit.evidenceTargetId)
   const videoConnected = useAppSelector((state) => state.user.videoConnected)
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
 
@@ -95,7 +98,7 @@ function App() {
               open={evidenceDialogOpen}
               onClose={() => dispatch(closeEvidenceDialog())}
               objectName={evidenceTargetName}
-              auditPoints={[]} // We can pass relevant points here later
+              auditPoints={AUDIT_POINTS_DATA[evidenceTargetId] || []}
             />
           )}
         </>
@@ -109,6 +112,7 @@ function App() {
 
   return (
     <Backdrop>
+      {loggedIn && <NotificationToast />}
       {ui}
 
       {/* Bouton pour ouvrir/fermer l'AuditHUD */}

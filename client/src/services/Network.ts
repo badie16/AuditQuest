@@ -319,7 +319,6 @@ export default class Network {
   onMyPlayerVideoConnected(callback: (key: string) => void, context?: any) {
     phaserEvents.on(Event.MY_PLAYER_VIDEO_CONNECTED, callback, context)
   }
-
   onPlayerUpdated(
     callback: (field: string, value: number | string, key: string) => void,
     context?: any

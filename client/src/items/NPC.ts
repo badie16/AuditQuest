@@ -63,7 +63,7 @@ export default class NPC extends AuditableObject {
       openDialogue({
         title: this.npcName,
         content: this.dialogueText,
-        npcId: this.npcName.toLowerCase().replace(/\s/g, '_'),
+        npcId: this.targetObjectId || this.npcName.toLowerCase().replace(/\s/g, '_'),
         portrait: this.portrait,
       })
     )

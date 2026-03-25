@@ -14,6 +14,7 @@ export interface AuditMission {
   status: AuditStatus | 'not_started'
   priority: Priority
   category: string
+  prerequisites?: string[]
   evidenceRequired: string[]
   evidenceCollected: number
   completionPercentage: number
