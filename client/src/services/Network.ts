@@ -111,6 +111,8 @@ export default class Network {
             startDate: new Date(currentValue.startTime).toISOString(),
           })
         )
+        // Trigger marker update once session is loaded
+        phaserEvents.emit(Event.UPDATE_AUDIT_STATE)
       }
     })
 
@@ -141,6 +143,7 @@ export default class Network {
             store.dispatch(
               updateMissionStatus({ missionId: mission.id, status: change.value as any })
             )
+            phaserEvents.emit(Event.UPDATE_AUDIT_STATE)
           }
         })
       }
@@ -152,6 +155,7 @@ export default class Network {
             evidenceCount: mission.collectedEvidence.length 
           })
         )
+        phaserEvents.emit(Event.UPDATE_AUDIT_STATE)
       }
     }
 
@@ -324,33 +328,33 @@ export default class Network {
   }
 
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
-    if (this.room) {
+    if (this.room && this.room.connection.isOpen) {
       this.room.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
     }
   }
 
   updatePlayerName(currentName: string) {
-    if (this.room) {
+    if (this.room && this.room.connection.isOpen) {
       this.room.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
     }
   }
 
   readyToConnect() {
-    if (this.room) {
+    if (this.room && this.room.connection.isOpen) {
       this.room.send(Message.READY_TO_CONNECT)
     }
     phaserEvents.emit(Event.MY_PLAYER_READY)
   }
 
   videoConnected() {
-    if (this.room) {
+    if (this.room && this.room.connection.isOpen) {
       this.room.send(Message.VIDEO_CONNECTED)
     }
     phaserEvents.emit(Event.MY_PLAYER_VIDEO_CONNECTED)
   }
 
   playerStreamDisconnect(id: string) {
-    if (this.room) {
+    if (this.room && this.room.connection.isOpen) {
       this.room.send(Message.DISCONNECT_STREAM, { clientId: id })
     }
     this.webRTC?.deleteVideoStream(id)
