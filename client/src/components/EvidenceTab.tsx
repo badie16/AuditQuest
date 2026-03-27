@@ -1,149 +1,74 @@
 import React from 'react'
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Chip,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  Paper,
-} from '@mui/material'
 import { useSelector } from 'react-redux'
 import { RootState } from '../stores'
 
 export default function EvidenceTab() {
-  const evidence = useSelector((state: RootState) => state.audit.collectedEvidence)
-
-  const getEvidenceTypeColor = (
-    type: string
-  ): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
-    switch (type) {
-      case 'document':
-        return 'primary'
-      case 'log':
-        return 'info'
-      case 'config':
-        return 'secondary'
-      case 'interview':
-        return 'success'
-      case 'observation':
-        return 'warning'
-      default:
-        return 'default'
-    }
-  }
+  const evidence = useSelector((state: RootState) => state.audit.collectedEvidence) || []
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Stack spacing={2}>
-        <Box>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Collected Evidence ({evidence.length})
-          </Typography>
+    <div className="audit-tab-content">
+      <div className="tab-header">
+        <h2 className="tab-title">Collected Evidence ({evidence.length})</h2>
+      </div>
 
-          {evidence.length === 0 ? (
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" textAlign="center">
-                  No evidence collected yet. Interact with objects in the office to collect
-                  evidence.
-                </Typography>
-              </CardContent>
-            </Card>
-          ) : (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Location</TableCell>
-                    <TableCell>Controls</TableCell>
-                    <TableCell>Collected At</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {evidence.map((item: any) => (
-                    <TableRow key={item.id} hover>
-                      <TableCell>
-                        <Chip
-                          label={item.type}
-                          size="small"
-                          color={getEvidenceTypeColor(item.type)}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{item.description}</Typography>
-                        {item.notes && (
-                          <Typography variant="caption" color="textSecondary">
-                            {item.notes}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>{item.location}</TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                          {item.relatedControls?.map((control: string) => (
-                            <Chip key={control} label={control} size="small" variant="outlined" />
-                          ))}
-                        </Stack>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption">
-                          {new Date(item.collectionTime).toLocaleTimeString()}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Box>
+      {evidence.length === 0 ? (
+        <div className="empty-panel-state">
+          No evidence collected yet. Interact with objects in the office to collect evidence.
+        </div>
+      ) : (
+        <div className="pixel-table-container">
+          <table className="pixel-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Collected At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {evidence.map((item: any) => (
+                <tr key={item.id}>
+                  <td>
+                    <span className={`pixel-chip evidence-${item.type}`}>
+                      {item.type}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="evidence-desc">{item.description}</div>
+                    {item.notes && <div className="evidence-notes">{item.notes}</div>}
+                  </td>
+                  <td>{item.location}</td>
+                  <td>
+                    <span className="time-stamp">
+                      {new Date(item.collectionTime).toLocaleTimeString()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {evidence.length > 0 && (
-          <Card sx={{ bgcolor: '#f5f5f5' }}>
-            <CardHeader
-              title="Evidence Summary"
-              subheader={`Total evidence items: ${evidence.length}`}
-              titleTypographyProps={{ variant: 'subtitle2' }}
-            />
-            <CardContent>
-              <Stack spacing={1}>
-                {Object.entries(
-                  evidence.reduce((acc: Record<string, number>, item: any) => {
-                    acc[item.type] = (acc[item.type] || 0) + 1
-                    return acc
-                  }, {})
-                ).map(([type, count]) => (
-                  <Box key={type} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">
-                      <Chip
-                        label={type}
-                        size="small"
-                        color={getEvidenceTypeColor(type)}
-                        variant="outlined"
-                        sx={{ mr: 1 }}
-                      />
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {count}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
-      </Stack>
-    </Box>
+      {evidence.length > 0 && (
+        <div className="summary-card pixel-card mt-24">
+          <h3 className="card-title">Evidence Summary</h3>
+          <div className="summary-grid">
+            {Object.entries(
+              evidence.reduce((acc: Record<string, number>, item: any) => {
+                acc[item.type] = (acc[item.type] || 0) + 1
+                return acc
+              }, {})
+            ).map(([type, count]) => (
+              <div key={type} className="summary-item">
+                <span className={`pixel-chip evidence-${type}`}>{type}</span>
+                <span className="summary-count">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -1,35 +1,14 @@
 import React, { useState } from 'react'
-import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Chip,
-  Collapse,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-  Typography,
-} from '@mui/material'
 import { useSelector } from 'react-redux'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { RootState } from '../stores'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import PendingActionsIcon from '@mui/icons-material/PendingActions'
 import HourglassTopIcon from '@mui/icons-material/HourglassTop'
-import { RootState } from '../stores'
-
-interface ExpandMoreIconProps {
-  expand: boolean
-}
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 export default function AuditMissionPanel() {
-  const activeMissions = useSelector((state: RootState) => state.audit.activeMissions)
-  const completedMissions = useSelector((state: RootState) => state.audit.completedMissions)
+  const activeMissions = useSelector((state: RootState) => state.audit.activeMissions) || []
+  const completedMissions = useSelector((state: RootState) => state.audit.completedMissions) || []
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const allMissions = [...activeMissions, ...completedMissions]
@@ -39,22 +18,11 @@ export default function AuditMissionPanel() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircleIcon sx={{ color: '#4caf50' }} />
+        return <CheckCircleIcon className="status-icon completed" />
       case 'in-progress':
-        return <HourglassTopIcon sx={{ color: '#ff9800' }} />
+        return <HourglassTopIcon className="status-icon in-progress" />
       default:
-        return <PendingActionsIcon sx={{ color: '#9e9e9e' }} />
-    }
-  }
-
-  const getStatusColor = (status: string): 'success' | 'warning' | 'default' => {
-    switch (status) {
-      case 'completed':
-        return 'success'
-      case 'in-progress':
-        return 'warning'
-      default:
-        return 'default'
+        return <PendingActionsIcon className="status-icon pending" />
     }
   }
 
@@ -63,151 +31,119 @@ export default function AuditMissionPanel() {
   }
 
   const MissionItem = ({ mission }: { mission: any }) => (
-    <Card sx={{ mb: 2 }}>
-      <CardHeader
-        avatar={getStatusIcon(mission.status)}
-        action={
-          <IconButton
-            onClick={() => handleToggleExpand(mission.id)}
-            aria-expanded={expandedId === mission.id}
-            aria-label="show more"
-          >
-            <ExpandMoreIcon
-              sx={{
-                transform: expandedId === mission.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s',
-              }}
-            />
-          </IconButton>
-        }
-        title={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              {mission.isoControl}
-            </Typography>
-            <Chip
-              label={mission.status}
-              size="small"
-              color={getStatusColor(mission.status)}
-              variant="outlined"
-            />
-          </Stack>
-        }
-        subheader={mission.name}
-        sx={{ pb: 1 }}
-      />
+    <div className={`mission-card ${mission.status} ${expandedId === mission.id ? 'expanded' : ''}`}>
+      <div className="mission-card__header" onClick={() => handleToggleExpand(mission.id)}>
+        <div className="mission-card__icon">{getStatusIcon(mission.status)}</div>
+        <div className="mission-card__title-group">
+          <div className="mission-card__meta">
+            <span className="mission-card__control">{mission.isoControl}</span>
+            <span className={`mission-card__status-badge status-${mission.status}`}>
+              {mission.status}
+            </span>
+          </div>
+          <div className="mission-card__name">{mission.name}</div>
+        </div>
+        <div className="mission-card__expand">
+          <ExpandMoreIcon
+            style={{
+              transform: expandedId === mission.id ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.3s',
+            }}
+          />
+        </div>
+      </div>
 
-      <Collapse in={expandedId === mission.id} timeout="auto" unmountOnExit>
-        <CardContent sx={{ pt: 0 }}>
-          <Stack spacing={2}>
-            <Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                Description
-              </Typography>
-              <Typography variant="body2">{mission.description}</Typography>
-            </Box>
+      {expandedId === mission.id && (
+        <div className="mission-card__content">
+          <div className="mission-section">
+            <div className="mission-label">Description</div>
+            <div className="mission-text">{mission.description}</div>
+          </div>
 
-            <Box>
-              <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                Evidence Required: {mission.collectedEvidence?.length || 0} /{' '}
-                {mission.evidenceRequired?.length || 0}
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={
-                  mission.collectedEvidence
-                    ? (mission.collectedEvidence.length / (mission.evidenceRequired?.length || 1)) *
-                      100
-                    : 0
-                }
+          <div className="mission-section">
+            <div className="mission-label">
+              Evidence: {mission.collectedEvidence?.length || 0} / {mission.evidenceRequired?.length || 0}
+            </div>
+            <div className="pixel-progress-bar">
+              <div 
+                className="pixel-progress-fill" 
+                style={{ 
+                  width: `${(mission.collectedEvidence?.length / (mission.evidenceRequired?.length || 1)) * 100}%` 
+                }} 
               />
-            </Box>
+            </div>
+          </div>
 
-            {mission.evidenceRequired && mission.evidenceRequired.length > 0 && (
-              <Box>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                  Required Evidence
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {mission.evidenceRequired.map((evidence: string, idx: number) => (
-                    <Chip key={idx} label={evidence} size="small" variant="outlined" />
-                  ))}
-                </Stack>
-              </Box>
-            )}
+          {mission.evidenceRequired && mission.evidenceRequired.length > 0 && (
+            <div className="mission-section">
+              <div className="mission-label">Required Evidence</div>
+              <div className="mission-chips">
+                {mission.evidenceRequired.map((evidence: string, idx: number) => (
+                  <span key={idx} className="pixel-chip">{evidence}</span>
+                ))}
+              </div>
+            </div>
+          )}
 
-            {mission.compliance && (
-              <Box>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                  Compliance Status
-                </Typography>
-                <Chip
-                  label={mission.compliance}
-                  size="small"
-                  color={mission.compliance === 'compliant' ? 'success' : 'error'}
-                />
-              </Box>
-            )}
+          {mission.compliance && (
+            <div className="mission-section">
+              <div className="mission-label">Compliance Status</div>
+              <span className={`pixel-chip compliance-${mission.compliance}`}>
+                {mission.compliance}
+              </span>
+            </div>
+          )}
 
-            {mission.justification && (
-              <Box>
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                  Notes
-                </Typography>
-                <Typography variant="body2">{mission.justification}</Typography>
-              </Box>
-            )}
-          </Stack>
-        </CardContent>
-      </Collapse>
-    </Card>
+          {mission.justification && (
+            <div className="mission-section">
+              <div className="mission-label">Notes</div>
+              <div className="mission-text note-box">{mission.justification}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Box sx={{ mb: 3 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-          <Typography variant="h6">Audit Missions Progress</Typography>
-          <Typography variant="body2" color="textSecondary">
-            {completedMissions.length} / {allMissions.length} completed
-          </Typography>
-        </Stack>
-        <LinearProgress
-          variant="determinate"
-          value={completionPercentage}
-          sx={{ height: 8, borderRadius: 4 }}
-        />
-      </Box>
+    <div className="audit-mission-panel">
+      <div className="panel-header">
+        <div className="panel-title-row">
+          <h2 className="panel-title">Missions Progress</h2>
+          <span className="panel-stats">
+            {completedMissions.length} / {allMissions.length} DONE
+          </span>
+        </div>
+        <div className="pixel-progress-bar large">
+          <div className="pixel-progress-fill" style={{ width: `${completionPercentage}%` }} />
+        </div>
+      </div>
 
-      {activeMissions.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-            Active Missions ({activeMissions.length})
-          </Typography>
-          {activeMissions.map((mission) => (
-            <MissionItem key={mission.id} mission={mission} />
-          ))}
-        </Box>
-      )}
+      <div className="missions-container">
+        {activeMissions.length > 0 && (
+          <div className="mission-group">
+            <h3 className="group-title">Active Missions</h3>
+            {activeMissions.map((mission) => (
+              <MissionItem key={mission.id} mission={mission} />
+            ))}
+          </div>
+        )}
 
-      {completedMissions.length > 0 && (
-        <Box>
-          <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: '#4caf50' }}>
-            Completed ({completedMissions.length})
-          </Typography>
-          {completedMissions.map((mission) => (
-            <MissionItem key={mission.id} mission={mission} />
-          ))}
-        </Box>
-      )}
+        {completedMissions.length > 0 && (
+          <div className="mission-group">
+            <h3 className="group-title completed-title">Completed</h3>
+            {completedMissions.map((mission) => (
+              <MissionItem key={mission.id} mission={mission} />
+            ))}
+          </div>
+        )}
 
-      {allMissions.length === 0 && (
-        <Box sx={{ p: 2, textAlign: 'center', color: 'textSecondary' }}>
-          <Typography variant="body2">
+        {allMissions.length === 0 && (
+          <div className="empty-panel-state">
             No missions available. Start an audit session to begin.
-          </Typography>
-        </Box>
-      )}
-    </Box>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

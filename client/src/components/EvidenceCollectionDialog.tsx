@@ -1,26 +1,12 @@
 import React, { useState } from 'react'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Box,
-  Alert,
-  Chip,
-  Stack,
-} from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
-import { addEvidence, closeEvidenceDialog } from '../stores/AuditStore'
+import { closeEvidenceDialog } from '../stores/AuditStore'
 import { AuditPoint } from '../items/AuditableObject'
 import phaserGame from '../PhaserGame'
 import Game from '../scenes/Game'
 import { RootState } from '../stores'
+import { BackgroundMode } from '../../../types/BackgroundMode'
+import './AuditHUD.scss'
 
 interface EvidenceCollectionDialogProps {
   open: boolean
@@ -45,25 +31,24 @@ export default function EvidenceCollectionDialog({
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState<string[]>([])
 
-  const activeMissions = useSelector((state: RootState) => state.audit.activeMissions)
+  const activeMissions = useSelector((state: RootState) => state.audit.activeMissions) || []
   const targetId = useSelector((state: RootState) => state.audit.evidenceTargetId)
+  const backgroundMode = useSelector((state: RootState) => state.user.backgroundMode)
+
+  if (!open) return null
+
+  const themeClass = backgroundMode === BackgroundMode.DAY ? 'theme-day' : 'theme-night'
 
   const handleSelectPoint = (point: AuditPoint) => {
     setSelectedPoint(point)
-    setEvidenceType(point.type)
+    setEvidenceType(point.type as any)
     setDescription(point.description)
   }
 
   const validateForm = (): boolean => {
     const newErrors: string[] = []
-
-    if (!description.trim()) {
-      newErrors.push('Evidence description is required')
-    }
-    if (!location.trim()) {
-      newErrors.push('Location is required')
-    }
-
+    if (!description.trim()) newErrors.push('Description required')
+    if (!location.trim()) newErrors.push('Location required')
     setErrors(newErrors)
     return newErrors.length === 0
   }
@@ -75,126 +60,142 @@ export default function EvidenceCollectionDialog({
     const network = game.network
 
     if (network) {
-      // Find the mission associated with this object
       const mission = activeMissions.find(m => m.targetObjectId === targetId)
-      const missionId = mission?.id || 'a5-1' // Fallback for demo
+      const missionId = mission?.id || 'a5-1'
 
-      // Send to server
-      network.addEvidence(
-        missionId,
-        evidenceType,
-        description,
-        location
-      )
-      
-      // Close dialog (the Redux state will be updated by the server response)
+      network.addEvidence(missionId, evidenceType, description, location)
       dispatch(closeEvidenceDialog())
     }
   }
 
-  const handleClose = () => {
-    setSelectedPoint(null)
-    setEvidenceType('observation')
-    setDescription('')
-    setLocation(objectName)
-    setNotes('')
-    setErrors([])
-    onClose()
-  }
-
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Collect Evidence - {objectName}</DialogTitle>
+    <div className={`audit-hud dialog-overlay mission-style ${themeClass}`}>
+      <div className="audit-hud__container dialog-container mission-intel-container">
+        <div className="audit-hud__header mission-header">
+          <div className="header-status">
+            <span className="blink-dot"></span>
+            SCANNING TARGET: {objectName.toUpperCase()}
+          </div>
+          <button className="audit-hud__close" onClick={onClose}>✕</button>
+        </div>
 
-      <DialogContent sx={{ pt: 2 }}>
-        <Stack spacing={3}>
-          {errors.length > 0 && (
-            <Alert severity="error">
-              <ul style={{ margin: 0, paddingLeft: 20 }}>
-                {errors.map((error, idx) => (
-                  <li key={idx}>{error}</li>
+        <div className="mission-intel-layout">
+          {/* Left Column: Target Info */}
+          <div className="intel-sidebar">
+            <div className="sidebar-section">
+              <h3 className="section-title">Available Intel</h3>
+              <div className="pixel-chips-column">
+                {auditPoints.map((point) => (
+                  <button
+                    key={point.id}
+                    className={`intel-point-btn ${selectedPoint?.id === point.id ? 'active' : ''}`}
+                    onClick={() => handleSelectPoint(point)}
+                  >
+                    <span className="point-type">[{point.type.substring(0, 3).toUpperCase()}]</span>
+                    <span className="point-name">{point.name}</span>
+                  </button>
                 ))}
-              </ul>
-            </Alert>
-          )}
+              </div>
+            </div>
 
-          <Box>
-            <InputLabel sx={{ mb: 1 }}>Available Audit Points</InputLabel>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {auditPoints.map((point) => (
-                <Chip
-                  key={point.id}
-                  label={point.name}
-                  onClick={() => handleSelectPoint(point)}
-                  variant={selectedPoint?.id === point.id ? 'filled' : 'outlined'}
-                  color={selectedPoint?.id === point.id ? 'primary' : 'default'}
-                  size="small"
+            {selectedPoint && (
+              <div className="sidebar-section mt-16 animate-fade-in">
+                <h3 className="section-title">Point Details</h3>
+                <div className="intel-details-box">
+                  <div className="detail-row">
+                    <span className="label">TARGET:</span>
+                    <span className="value">{objectName}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">CONTROLS:</span>
+                    <div className="chips-inline">
+                      {selectedPoint.relatedControls.map(c => (
+                        <span key={c} className="pixel-chip small">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="sidebar-decor">
+              <div className="decor-line"></div>
+              <div className="decor-dots"></div>
+            </div>
+          </div>
+
+          {/* Right Column: Collection Form */}
+          <div className="intel-main">
+            <h3 className="section-title">Evidence Log Entry</h3>
+            
+            <div className="pixel-form">
+              {errors.length > 0 && (
+                <div className="pixel-alert error mb-16">
+                  {errors.map((error, idx) => <div key={idx}>! {error.toUpperCase()}</div>)}
+                </div>
+              )}
+
+              <div className="form-grid">
+                <div className="form-section">
+                  <label className="pixel-label">Collection Type</label>
+                  <select 
+                    className="pixel-input select"
+                    value={evidenceType}
+                    onChange={(e) => setEvidenceType(e.target.value as any)}
+                  >
+                    <option value="observation">OBSERVATION</option>
+                    <option value="document">DOCUMENT</option>
+                    <option value="log">SYSTEM LOG</option>
+                    <option value="config">CONFIGURATION</option>
+                    <option value="interview">INTERVIEW</option>
+                  </select>
+                </div>
+
+                <div className="form-section">
+                  <label className="pixel-label">Site Location</label>
+                  <input
+                    type="text"
+                    className="pixel-input"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <label className="pixel-label">Data Description</label>
+                <textarea
+                  className="pixel-input textarea"
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Input detailed evidence description..."
                 />
-              ))}
-            </Stack>
-          </Box>
+              </div>
 
-          <FormControl fullWidth>
-            <InputLabel>Evidence Type</InputLabel>
-            <Select
-              value={evidenceType}
-              onChange={(e) => setEvidenceType(e.target.value as any)}
-              label="Evidence Type"
-            >
-              <MenuItem value="observation">Observation</MenuItem>
-              <MenuItem value="document">Document</MenuItem>
-              <MenuItem value="log">System Log</MenuItem>
-              <MenuItem value="config">Configuration</MenuItem>
-              <MenuItem value="interview">Interview</MenuItem>
-            </Select>
-          </FormControl>
+              <div className="form-section">
+                <label className="pixel-label">Field Notes</label>
+                <textarea
+                  className="pixel-input textarea"
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Additional observations (optional)..."
+                />
+              </div>
+            </div>
 
-          <TextField
-            label="Evidence Description"
-            fullWidth
-            multiline
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the evidence collected..."
-          />
+            <div className="intel-footer-decor">
+              DATA SECURE // AUDIT MODE V1.0 // {new Date().toLocaleTimeString()}
+            </div>
+          </div>
+        </div>
 
-          <TextField
-            label="Location"
-            fullWidth
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-
-          <TextField
-            label="Additional Notes"
-            fullWidth
-            multiline
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional notes about this evidence..."
-          />
-
-          {selectedPoint && (
-            <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-              <strong>Related Controls:</strong>
-              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                {selectedPoint.relatedControls.map((control) => (
-                  <Chip key={control} label={control} size="small" variant="outlined" />
-                ))}
-              </Stack>
-            </Box>
-          )}
-        </Stack>
-      </DialogContent>
-
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleCollectEvidence} variant="contained" color="primary">
-          Collect Evidence
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <div className="dialog-actions mission-actions">
+          <button className="pixel-btn secondary" onClick={onClose}>ABORT</button>
+          <button className="pixel-btn primary" onClick={handleCollectEvidence}>COLLECT DATA</button>
+        </div>
+      </div>
+    </div>
   )
 }
