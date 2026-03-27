@@ -204,10 +204,11 @@ const auditSlice = createSlice({
       if (!state.collectedEvidence.find(e => e.id === evidence.id)) {
         state.collectedEvidence.push(evidence)
       }
-
+      console.log('Collected Evidence:',  state.collectedEvidence)
       // Update evidence list in BOTH active and completed missions
       const activeMission = state.activeMissions?.find((m) => m.id === evidence.missionId)
       if (activeMission) {
+        console.log('Adding evidence to active mission:', activeMission)
         activeMission.collectedEvidence = activeMission.collectedEvidence || []
         if (!activeMission.collectedEvidence.includes(evidence.id)) {
             activeMission.collectedEvidence.push(evidence.id)

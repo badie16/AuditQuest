@@ -53,7 +53,7 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
 }
 
 export class StartMissionCommand extends Command<OfficeState> {
-  execute(client: any, { missionId }: { missionId: string }) {
+  execute({ client, missionId }: { client: any; missionId: string }) {
     const mission = this.state.missions.get(missionId)
 
     if (!mission) {
@@ -67,7 +67,7 @@ export class StartMissionCommand extends Command<OfficeState> {
     const journalEntry = new JournalEntrySchema()
     journalEntry.id = uuid()
     journalEntry.timestamp = Date.now()
-    journalEntry.auditorId = client.sessionId || 'auditor'
+    journalEntry.auditorId = client?.sessionId || 'auditor'
     journalEntry.action = `Started audit mission: ${mission.name}`
     journalEntry.details = `ISO ${mission.isoControl}`
     journalEntry.missionId = missionId
@@ -78,7 +78,8 @@ export class StartMissionCommand extends Command<OfficeState> {
 }
 
 export class CompleteMissionCommand extends Command<OfficeState> {
-  execute(client: any, { missionId, compliance, justification }: {
+  execute({ client, missionId, compliance, justification }: {
+    client: any
     missionId: string
     compliance: 'compliant' | 'non-compliant' | 'partial'
     justification: string
@@ -101,7 +102,7 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     finding.missionId = missionId
     finding.status = compliance
     finding.justification = justification
-    finding.auditorId = client.sessionId || 'auditor'
+    finding.auditorId = client?.sessionId || 'auditor'
     finding.createdAt = Date.now()
     finding.lastModified = Date.now()
     
@@ -141,7 +142,7 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     const journalEntry = new JournalEntrySchema()
     journalEntry.id = uuid()
     journalEntry.timestamp = Date.now()
-    journalEntry.auditorId = client.sessionId || 'auditor'
+    journalEntry.auditorId = client?.sessionId || 'auditor'
     journalEntry.action = `Completed mission: ${mission.name}`
     journalEntry.details = `Compliance: ${compliance}`
     journalEntry.missionId = missionId

@@ -4,12 +4,14 @@ import { EvidenceSchema, JournalEntrySchema, NotificationSchema } from '../schem
 import { v4 as uuid } from 'uuid'
 
 export class CollectEvidenceCommand extends Command<OfficeState> {
-  execute(client: any, {
+  execute({
+    client,
     missionId,
     type,
     description,
     location,
   }: {
+    client: any
     missionId: string
     type: 'document' | 'log' | 'config' | 'interview' | 'observation'
     description: string
@@ -67,7 +69,7 @@ export class CollectEvidenceCommand extends Command<OfficeState> {
 }
 
 export class VerifyEvidenceCommand extends Command<OfficeState> {
-  execute(client: any, { evidenceId, verified }: { evidenceId: string; verified: boolean }) {
+  execute({ client, evidenceId, verified }: { client: any; evidenceId: string; verified: boolean }) {
     const evidence = this.state.evidence.get(evidenceId)
 
     if (!evidence) {
@@ -77,14 +79,14 @@ export class VerifyEvidenceCommand extends Command<OfficeState> {
 
     evidence.verified = verified
     if (verified) {
-      evidence.verifiedBy = client.sessionId || 'auditor'
+      evidence.verifiedBy = client?.sessionId || 'auditor'
       evidence.verifiedAt = Date.now()
     }
   }
 }
 
 export class RemoveEvidenceCommand extends Command<OfficeState> {
-  execute(client: any, { evidenceId }: { evidenceId: string }) {
+  execute({ client, evidenceId }: { client: any; evidenceId: string }) {
     const evidence = this.state.evidence.get(evidenceId)
 
     if (!evidence) {
@@ -105,7 +107,7 @@ export class RemoveEvidenceCommand extends Command<OfficeState> {
     const journalEntry = new JournalEntrySchema()
     journalEntry.id = uuid()
     journalEntry.timestamp = Date.now()
-    journalEntry.auditorId = client.sessionId || 'auditor'
+    journalEntry.auditorId = client?.sessionId || 'auditor'
     journalEntry.action = 'Removed evidence'
     journalEntry.details = `Removed: ${evidence.description}`
     journalEntry.type = 'evidence_collected'

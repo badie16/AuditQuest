@@ -9,7 +9,8 @@ import { RISK_MATRIX } from '../../../types/AuditTypes'
 import { v4 as uuid } from 'uuid'
 
 export class CreateRiskAssessmentCommand extends Command<OfficeState> {
-  execute(client: any, {
+  execute({
+    client,
     findingId,
     probability,
     impact,
@@ -17,6 +18,7 @@ export class CreateRiskAssessmentCommand extends Command<OfficeState> {
     remediationDue,
     assignedTo,
   }: {
+    client: any
     findingId: string
     probability: 'low' | 'medium' | 'high'
     impact: 'low' | 'medium' | 'high'

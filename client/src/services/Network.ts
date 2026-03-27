@@ -369,6 +369,7 @@ export default class Network {
 
   completeMission(missionId: string, compliance: string, justification: string) {
     if (this.room) {
+      console.log('Completing mission with data:', { missionId, compliance, justification })
       this.room.send(Message.COMPLETE_MISSION, { missionId, compliance, justification })
     }
   }
