@@ -41,9 +41,7 @@ export default function EvidenceTab() {
               {evidence.map((item: any) => (
                 <tr key={item.id}>
                   <td>
-                    <span className={`pixel-chip evidence-${item.type}`}>
-                      {item.type}
-                    </span>
+                    <span className={`pixel-chip evidence-${item.type}`}>{item.type}</span>
                   </td>
                   <td>
                     <div className="evidence-desc">{item.description}</div>
@@ -52,11 +50,13 @@ export default function EvidenceTab() {
                   <td>{item.location}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <span className={`pixel-chip ${item.verified ? 'evidence-document' : 'evidence-observation'}`}>
+                      <span
+                        className={`pixel-chip ${item.verified ? 'evidence-document' : 'evidence-observation'}`}
+                      >
                         {item.verified ? 'verified' : 'pending'}
                       </span>
-                      {auditRole === 'auditor' && (
-                        item.verified ? (
+                      {auditRole === 'auditor' &&
+                        (item.verified ? (
                           <button
                             className="pixel-btn secondary"
                             onClick={() => handleVerifyEvidence(item.id, false)}
@@ -70,8 +70,7 @@ export default function EvidenceTab() {
                           >
                             Verify
                           </button>
-                        )
-                      )}
+                        ))}
                     </div>
                   </td>
                   <td>

@@ -133,7 +133,7 @@ const auditSlice = createSlice({
 
       state.completedMissions = state.completedMissions || []
       // Avoid duplicates
-      if (!state.completedMissions.find(m => m.id === mission.id)) {
+      if (!state.completedMissions.find((m) => m.id === mission.id)) {
         state.completedMissions.push(mission)
       }
 
@@ -162,27 +162,27 @@ const auditSlice = createSlice({
       action: PayloadAction<{ missionId: string; status: AuditStatus }>
     ) => {
       const { missionId, status } = action.payload
-      
+
       // Look in active missions
       const missionIdx = state.activeMissions?.findIndex((m) => m.id === missionId)
-      
+
       if (missionIdx !== -1 && state.activeMissions) {
         const mission = state.activeMissions[missionIdx]
         mission.status = status
-        
+
         if (status === 'completed') {
           state.completedMissions = state.completedMissions || []
           // Avoid duplicates in completed list
-          if (!state.completedMissions.find(m => m.id === missionId)) {
+          if (!state.completedMissions.find((m) => m.id === missionId)) {
             state.completedMissions.push(mission)
           }
           state.activeMissions.splice(missionIdx, 1)
         }
       } else {
         // Check if it's already in completed missions (maybe redundant but safe)
-        const completedMission = state.completedMissions?.find(m => m.id === missionId)
+        const completedMission = state.completedMissions?.find((m) => m.id === missionId)
         if (completedMission) {
-            completedMission.status = status
+          completedMission.status = status
         }
       }
     },
@@ -211,17 +211,17 @@ const auditSlice = createSlice({
 
       state.collectedEvidence = state.collectedEvidence || []
       // Avoid duplicates
-      if (!state.collectedEvidence.find(e => e.id === evidence.id)) {
+      if (!state.collectedEvidence.find((e) => e.id === evidence.id)) {
         state.collectedEvidence.push(evidence)
       }
-      console.log('Collected Evidence:',  state.collectedEvidence)
+      console.log('Collected Evidence:', state.collectedEvidence)
       // Update evidence list in BOTH active and completed missions
       const activeMission = state.activeMissions?.find((m) => m.id === evidence.missionId)
       if (activeMission) {
         console.log('Adding evidence to active mission:', activeMission)
         activeMission.evidenceCollected = (activeMission.evidenceCollected || 0) + 1
       }
-      
+
       const completedMission = state.completedMissions?.find((m) => m.id === evidence.missionId)
       if (completedMission) {
         completedMission.evidenceCollected = (completedMission.evidenceCollected || 0) + 1
@@ -281,7 +281,6 @@ const auditSlice = createSlice({
         findingId: finding.id,
         type: 'finding_added',
       })
-
     },
 
     updateFinding: (state, action: PayloadAction<ComplianceFinding>) => {
@@ -309,8 +308,6 @@ const auditSlice = createSlice({
         findingId: risk.findingId,
         type: 'risk_assessed',
       })
-
-
     },
 
     updateRiskAssessment: (state, action: PayloadAction<RiskAssessment>) => {
@@ -366,16 +363,16 @@ const auditSlice = createSlice({
       state.activeMissions = state.activeMissions || []
       if (action.payload) {
         // Avoid duplicates
-        if (!state.activeMissions.find(m => m.id === action.payload.id) && 
-            !state.completedMissions?.find(m => m.id === action.payload.id)) {
+        if (
+          !state.activeMissions.find((m) => m.id === action.payload.id) &&
+          !state.completedMissions?.find((m) => m.id === action.payload.id)
+        ) {
           state.activeMissions.push(action.payload)
         }
       }
     },
   },
 })
-
-
 
 export const {
   initializeAuditSession,

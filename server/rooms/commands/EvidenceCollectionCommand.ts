@@ -69,7 +69,15 @@ export class CollectEvidenceCommand extends Command<OfficeState> {
 }
 
 export class VerifyEvidenceCommand extends Command<OfficeState> {
-  execute({ client, evidenceId, verified }: { client: any; evidenceId: string; verified: boolean }) {
+  execute({
+    client,
+    evidenceId,
+    verified,
+  }: {
+    client: any
+    evidenceId: string
+    verified: boolean
+  }) {
     const evidence = this.state.evidence.get(evidenceId)
     const player = client ? this.state.players.get(client.sessionId) : undefined
 
@@ -143,4 +151,8 @@ export class RemoveEvidenceCommand extends Command<OfficeState> {
   }
 }
 
-export const evidenceCommands = [CollectEvidenceCommand, VerifyEvidenceCommand, RemoveEvidenceCommand]
+export const evidenceCommands = [
+  CollectEvidenceCommand,
+  VerifyEvidenceCommand,
+  RemoveEvidenceCommand,
+]
