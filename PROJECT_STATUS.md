@@ -1,66 +1,76 @@
-# État d'Avancement du Projet - SkyOffice Audit (v2.1)
+# Etat d'Avancement du Projet - SkyOffice Audit (v2.2)
 
-Ce document résume les fonctionnalités implémentées, les améliorations en cours et la feuille de route pour la finalisation du système d'audit ISO 27001.
+Ce document reflète l'etat reel du code au 02 Avril 2026 (client, serveur, types partages), avec priorisation des actions de stabilisation.
 
-## ✅ Ce qui est fait (Correctement)
+## Resume Executif
 
-### Infrastructure de Base & Multi-joueur
-- **Synchronisation Temps Réel** : Mouvements, animations, chat et tableaux blancs synchronisés via Colyseus.
-- **Monde Virtuel** : Map Phaser complète avec zones dédiées (Bureaux, Direction, Salle Serveur, Cafétéria).
-- **Communication** : Bulles de dialogue dynamiques et système de chat persistant.
+- Le socle produit est solide: monde multi-joueur, missions d'audit, preuves, findings, risques, journal, UI HUD.
+- Le principal risque actuel est la derive des types entre client/serveur/types partages.
+- Le projet n'est pas encore en etat "release" sans correction de coherence TypeScript et clarification du packaging de deploiement.
 
-### Système d'Audit (Missions & Preuves)
-- **Logique de Mission** : Système de dépendances (`prerequisites`) fonctionnel. Les missions se débloquent séquentiellement (ex: A.5.1 -> A.6.1).
-- **Collecte de Preuves** : Interface interactive `EvidenceCollectionDialog` stylisée en "Mission Intel" (HUD de jeu) permettant de collecter des preuves sur les objets du décor (PC, Serveurs, Tableaux).
-- **Audit Points** : Base de données centralisée (`AUDIT_POINTS_DATA`) associant des preuves spécifiques à chaque objet auditable.
-- **Marqueurs Phaser** : Retour visuel direct dans le monde de jeu (icônes d'état au-dessus des objets).
+## Ce qui est operationnel
 
-### Interface Utilisateur (Design Pixel Art)
-- **Refonte Graphique Complète** : Tout le Dashboard d'audit (`AuditHUD`) ainsi que les dialogues de mission et de collecte ont été migrés vers un style **Pixel Art / Retro Gaming** cohérent.
-- **Onglets Fonctionnels** : 
-  - **Overview** : Score dynamique (0-100) et statistiques globales.
-  - **Missions** : Liste interactive des tâches avec barres de progression pixelisées.
-  - **Evidence** : Répertoire tabulaire des preuves collectées.
-  - **Findings** : Évaluations de conformité détaillées.
-  - **Risks** : Matrice de risques et suivi des remédiations.
-  - **Journal** : Piste d'audit (logs) de toutes les actions effectuées.
+### Infrastructure et gameplay
+
+- Synchronisation temps reel Colyseus (joueurs, chat, interactions).
+- Monde Phaser jouable avec objets interactifs (PC, whiteboards, NPC).
+- Flux principal room lobby/public/custom actif.
+
+### Flux metier audit
+
+- Initialisation automatique des missions serveur.
+- Collecte de preuves et journalisation des actions.
+- Creation de findings de conformite et evaluations de risques.
+- HUD audit avec sections overview, missions, evidence, findings, risks, journal.
+
+## Points critiques identifies
+
+### 1) Incoherence de modeles TypeScript (Priorite P0)
+
+- Le modele mission/finding n'est pas aligne partout (schemas serveur, types partages, store client).
+- Effet: erreurs de compilation et risque de regressions fonctionnelles.
+
+### 2) Stabilite de la synchro audit (Priorite P0)
+
+- Certaines collections Colyseus cote client sont traitees comme toujours definies alors qu'elles peuvent etre optionnelles selon les interfaces.
+- Effet: erreurs TypeScript et risque de comportements incomplets a l'initialisation.
+
+### 3) Build/deploiement incomplet de la webapp (Priorite P1)
+
+- La racine demarre surtout le serveur; le client Vite reste un cycle a part.
+- Le mode de publication client + serveur n'est pas formalise en une seule procedure "production".
+
+### 4) Dette technique fonctionnelle (Priorite P1)
+
+- Score encore majoritairement pilote par le client pour l'affichage.
+- Plusieurs fonctionnalites annoncees restent partielles (interviews NPC avancees, roles, verification collaborative des preuves).
+
+## Qualite et maintenance
+
+- Logging debug encore present dans des parcours critiques.
+- Quelques erreurs de style/CSS mineures detectables dans l'UI.
+- Couverture de tests automatisee insuffisante (pas de vraie suite de tests projet).
+
+## Roadmap prioritaire (mise a jour)
+
+1. P0 - Corriger toutes les erreurs TypeScript bloquantes (client + serveur).
+2. P0 - Unifier les contrats de donnees mission/finding/risk entre:
+   - types partages
+   - schema Colyseus
+   - store Redux
+   - mapping reseau client
+3. P1 - Migrer le calcul de score final cote serveur et synchroniser au client.
+4. P1 - Finaliser la strategie de build/deploiement complete (client + serveur).
+5. P2 - Ajouter les boutons d'export rapport dans l'onglet Overview.
+6. P2 - Ajouter interviews NPC a choix et verification collaborative des preuves.
+
+## Definition de pret a livrer (DoD)
+
+- Zero erreur TypeScript sur workspace.
+- Mission flow complet valide: demarrage -> evidence -> finding -> risk -> score.
+- Export rapport declenchable depuis UI.
+- Procedure de deploiement documentee et reproductible.
 
 ---
 
-## ⚠️ Ce qui est fait (À améliorer / En cours)
-
-### Système de Notation (Scoring)
-- **Synchronisation du Score** : Le calcul du score est actuellement géré côté client pour l'affichage. Il devrait être recalculé côté serveur à chaque ajout de constat pour garantir l'intégrité des données en multi-joueur.
-
-### Génération de Rapport
-- **Export UI** : La logique technique (`reportGenerator.ts`) supporte l'export HTML/JSON/CSV, mais il manque encore les boutons physiques dans l'interface "Overview" pour déclencher le téléchargement par l'utilisateur.
-
-### Accessibilité
-- **Scrollbars** : Les barres de défilement personnalisées dans le style pixel art peuvent être difficiles à manipuler sur certains navigateurs.
-
----
-
-## ❌ Ce qui n'est pas complété (À ajouter)
-
-### Interviews et PNJs (NPCs)
-- **Système d'Entretien** : Les PNJs ont des dialogues statiques. Il manque un `InterviewDialog` permettant de poser des questions spécifiques pour "débloquer" certaines preuves (ex: demander la politique au Directeur).
-
-### Gestion des Rôles
-- **Auditeur vs Audité** : Actuellement, tous les utilisateurs ont les mêmes droits. Il faut implémenter un système de rôles (ex: seul l'Auditeur peut valider une mission).
-
-### Preuves Avancées
-- **Visualisation de Documents** : Ajouter la possibilité de "voir" un faux document (PDF simulé ou image) lors de la collecte d'une preuve de type "Document".
-- **Vérification** : Interface pour "Vérifier/Approuver" une preuve collectée par un autre membre de l'équipe (travail collaboratif).
-
----
-
-## 🚀 Roadmap Prioritaire
-
-1.  **Boutons d'Export (Immédiat)** : Ajouter les options de téléchargement (HTML/CSV) dans l'onglet Overview du Dashboard.
-2.  **Interaction PNJ (Prochaine étape)** : Créer un système de dialogue à choix multiples pour les entretiens d'audit.
-3.  **Commandes Serveur de Score** : Déplacer la logique de `calculateAuditScore` dans une commande Colyseus (`UpdateAuditScoreCommand`).
-4.  **Simulateur de Documents** : Créer un composant simple pour afficher le contenu textuel ou visuel des preuves collectées.
-5.  **Audit Timer** : Option pour ajouter un compte à rebours global pour la session d'audit afin d'augmenter le challenge.
-
----
-*Dernière mise à jour : 27 Mars 2026*
+Derniere mise a jour: 02 Avril 2026

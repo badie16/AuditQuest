@@ -26,6 +26,12 @@ export class CreateRiskAssessmentCommand extends Command<OfficeState> {
     remediationDue?: number
     assignedTo?: string
   }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || player.role !== 'auditor') {
+      console.error(`Unauthorized risk assessment by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const finding = this.state.findings.get(findingId)
 
     if (!finding) {
@@ -95,6 +101,12 @@ export class UpdateRiskAssessmentCommand extends Command<OfficeState> {
     remediationDue?: number
     assignedTo?: string
   }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || player.role !== 'auditor') {
+      console.error(`Unauthorized risk update by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const risk = this.state.risks.get(riskId)
 
     if (!risk) {
@@ -121,6 +133,12 @@ export class UpdateRiskAssessmentCommand extends Command<OfficeState> {
 
 export class RemoveRiskAssessmentCommand extends Command<OfficeState> {
   execute(client: any, { riskId }: { riskId: string }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || player.role !== 'auditor') {
+      console.error(`Unauthorized risk removal by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const risk = this.state.risks.get(riskId)
 
     if (!risk) {

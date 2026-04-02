@@ -4,6 +4,13 @@ import { BackgroundMode } from '../../../types/BackgroundMode'
 
 import phaserGame from '../PhaserGame'
 import Bootstrap from '../scenes/Bootstrap'
+import { AuditRole } from '../../../types/AuditTypes'
+
+interface PlayerDirectoryEntry {
+  id: string
+  name: string
+  role: AuditRole
+}
 
 export function getInitialBackgroundMode() {
   const currentHour = new Date().getHours()
@@ -17,7 +24,9 @@ export const userSlice = createSlice({
     sessionId: '',
     videoConnected: false,
     loggedIn: false,
+    auditRole: 'observer' as AuditRole,
     playerNameMap: new Map<string, string>(),
+    playerDirectory: [] as PlayerDirectoryEntry[],
     showJoystick: window.innerWidth < 650,
     currentRoom: 'Office',
   },
@@ -42,8 +51,22 @@ export const userSlice = createSlice({
     setLoggedIn: (state, action: PayloadAction<boolean>) => {
       state.loggedIn = action.payload
     },
+    setAuditRole: (state, action: PayloadAction<AuditRole>) => {
+      state.auditRole = action.payload
+    },
     setPlayerNameMap: (state, action: PayloadAction<{ id: string; name: string }>) => {
       state.playerNameMap.set(sanitizeId(action.payload.id), action.payload.name)
+    },
+    upsertPlayerDirectory: (state, action: PayloadAction<PlayerDirectoryEntry>) => {
+      const idx = state.playerDirectory.findIndex((p) => p.id === action.payload.id)
+      if (idx === -1) {
+        state.playerDirectory.push(action.payload)
+      } else {
+        state.playerDirectory[idx] = action.payload
+      }
+    },
+    removePlayerDirectory: (state, action: PayloadAction<string>) => {
+      state.playerDirectory = state.playerDirectory.filter((p) => p.id !== action.payload)
     },
     removePlayerNameMap: (state, action: PayloadAction<string>) => {
       state.playerNameMap.delete(sanitizeId(action.payload))
@@ -59,7 +82,10 @@ export const {
   setSessionId,
   setVideoConnected,
   setLoggedIn,
+  setAuditRole,
   setPlayerNameMap,
+  upsertPlayerDirectory,
+  removePlayerDirectory,
   removePlayerNameMap,
   setShowJoystick,
   setCurrentRoom,

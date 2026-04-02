@@ -71,9 +71,15 @@ export class CollectEvidenceCommand extends Command<OfficeState> {
 export class VerifyEvidenceCommand extends Command<OfficeState> {
   execute({ client, evidenceId, verified }: { client: any; evidenceId: string; verified: boolean }) {
     const evidence = this.state.evidence.get(evidenceId)
+    const player = client ? this.state.players.get(client.sessionId) : undefined
 
     if (!evidence) {
       console.error(`Evidence ${evidenceId} not found`)
+      return
+    }
+
+    if (!player || player.role !== 'auditor') {
+      console.error(`Unauthorized evidence verification by ${client?.sessionId || 'unknown'}`)
       return
     }
 
@@ -81,7 +87,28 @@ export class VerifyEvidenceCommand extends Command<OfficeState> {
     if (verified) {
       evidence.verifiedBy = client?.sessionId || 'auditor'
       evidence.verifiedAt = Date.now()
+    } else {
+      evidence.verifiedBy = ''
+      evidence.verifiedAt = 0
     }
+
+    const journalEntry = new JournalEntrySchema()
+    journalEntry.id = uuid()
+    journalEntry.timestamp = Date.now()
+    journalEntry.auditorId = client?.sessionId || 'auditor'
+    journalEntry.action = verified ? 'Verified evidence' : 'Revoked evidence verification'
+    journalEntry.details = evidence.description
+    journalEntry.missionId = evidence.missionId
+    journalEntry.type = 'note_added'
+    this.state.journal.push(journalEntry)
+
+    const notification = new NotificationSchema()
+    notification.id = uuid()
+    notification.timestamp = Date.now()
+    notification.type = verified ? 'success' : 'warning'
+    notification.title = verified ? 'Evidence Verified' : 'Evidence Verification Revoked'
+    notification.message = evidence.description
+    this.state.notifications.push(notification)
   }
 }
 

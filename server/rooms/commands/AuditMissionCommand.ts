@@ -2,12 +2,45 @@ import { Command } from '@colyseus/command'
 import { OfficeState } from '../schema/OfficeState'
 import { MissionSchema, JournalEntrySchema, ComplianceFindingSchema } from '../schema/AuditState'
 import { AUDIT_MISSIONS } from '../../../types/AuditData'
+import { AUDIT_SCORING } from '../../../types/AuditTypes'
 import { v4 as uuid } from 'uuid'
+
+function updateAuditSessionMetrics(state: OfficeState) {
+  const totalMissions = state.missions.size
+  let completedMissions = 0
+  let nonCompliantCount = 0
+
+  state.missions.forEach((mission) => {
+    if (mission.status === 'completed') {
+      completedMissions += 1
+      if (mission.compliance === 'non-compliant') {
+        nonCompliantCount += 1
+      }
+    }
+  })
+
+  const rawScore =
+    AUDIT_SCORING.BASE_SCORE +
+    completedMissions * AUDIT_SCORING.CONTROL_AUDITED +
+    nonCompliantCount * AUDIT_SCORING.NON_COMPLIANT_PENALTY
+
+  if (state.auditSession) {
+    state.auditSession.totalScore = Math.max(
+      AUDIT_SCORING.MIN_SCORE,
+      Math.min(AUDIT_SCORING.MAX_SCORE, rawScore)
+    )
+    state.auditSession.completionPercentage =
+      totalMissions > 0 ? Math.round((completedMissions / totalMissions) * 100) : 0
+    if (completedMissions === totalMissions && totalMissions > 0) {
+      state.auditSession.status = 'completed'
+      state.auditSession.endTime = Date.now()
+    }
+  }
+}
 
 export class InitializeAuditMissionsCommand extends Command<OfficeState> {
   execute() {
     // Initialize audit missions from shared AUDIT_MISSIONS data
-    let first = true
     AUDIT_MISSIONS.forEach((data) => {
       const mission = new MissionSchema()
       mission.id = data.id || uuid()
@@ -40,6 +73,8 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
       this.state.missions.set(mission.id, mission)
     })
 
+    updateAuditSessionMetrics(this.state)
+
     // Create initial journal entry
     const journalEntry = new JournalEntrySchema()
     journalEntry.id = uuid()
@@ -54,6 +89,12 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
 
 export class StartMissionCommand extends Command<OfficeState> {
   execute({ client, missionId }: { client: any; missionId: string }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || player.role !== 'auditor') {
+      console.error(`Unauthorized mission start by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const mission = this.state.missions.get(missionId)
 
     if (!mission) {
@@ -84,6 +125,12 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     compliance: 'compliant' | 'non-compliant' | 'partial'
     justification: string
   }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || player.role !== 'auditor') {
+      console.error(`Unauthorized mission completion by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const mission = this.state.missions.get(missionId)
 
     if (!mission) {
@@ -110,6 +157,8 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     mission.collectedEvidence.forEach(evId => finding.evidence.push(evId))
 
     this.state.findings.set(finding.id, finding)
+
+    updateAuditSessionMetrics(this.state)
 
     // Unlock next missions based on prerequisites
     this.state.missions.forEach((m) => {

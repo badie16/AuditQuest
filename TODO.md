@@ -1,157 +1,82 @@
-# ISO 2700x Audit Simulator – Features Checklist
+# ISO 2700x Audit Simulator - TODO Priorise
 
-This document lists all the planned features for the **ISO 2700x Security Audit Simulator** project.
-Each feature can be checked once it is implemented.
+Ce backlog est aligne sur l'etat reel du code au 02 Avril 2026.
 
----
-
-# Core Game Features
-
-* [x] Player avatar (Auditor) movement inside the virtual office
-* [x] Interactive 2D office environment
-* [x] Multiple rooms (Reception, Offices, Server Room, Meeting Room)
-* [x] Object interaction system (inspect computers, documents, servers)
-* [x] NPC employees in the office (Sarah, Bob, Alice, Director Smith)
-* [x] Dialogue system with employees (Pixel Art RPG Style)
-* [x] Intelligent NPC placement (PNJs sit on chairs and occupy them)
-* [x] Evidence collection system (Implemented via EvidenceCollectionDialog and AuditStore)
-* [x] Mission / quest system for audit tasks (Implemented via AuditService and AuditMissionPanel)
-* [x] Audit progress tracking (Tracked in AuditStore and displayed in AuditHUD)
-* [ ] In-game notifications (new evidence, mission completed)
+Convention:
+- [ ] A faire
+- [~] En cours / partiel
+- [x] Termine
 
 ---
 
-# ISO 2700x Audit Features (Required by Project Specification)
+# P0 - Stabilisation technique (bloquant)
 
-* [x] Company scenario presentation (Description in AuditService/MissionBriefing)
-* [x] Audit objective description
-* [x] List of ISO controls to audit (10 controls implemented: A.5 to A.18)
-* [x] At least 10–15 ISO 27002 security controls implemented (10/15 completed)
-* [x] Description of each control and its objective
-* [x] Evidence collection for each control
-* [x] Compliance evaluation system (Compliant / Non-Compliant / Partial)
-* [x] Ability to justify audit decisions (Implemented in ComplianceEvaluationDialog)
-* [x] Risk assessment system (based on ISO 27005)
-* [x] Risk probability evaluation
-* [x] Risk impact evaluation
-* [x] Recommendation system for fixing issues (Implemented in RiskAssessmentDialog)
+- [x] Corriger toutes les erreurs TypeScript du workspace (client + serveur).
+- [x] Aligner les modeles de donnees mission/finding/risk entre types partages, schema serveur et store client.
+- [x] Corriger le mapping audit dans le reseau client (sync state Colyseus -> Redux).
+- [x] Nettoyer les incoherences de champs dans AuditStore (mission et finding).
+- [x] Fiabiliser les gardes de null/undefined sur l'etat Colyseus cote client.
 
 ---
 
-# Evidence System
+# P1 - Integrite metier audit
 
-* [ ] Inspect password policy documents (Abstracted in evidence collection)
-* [ ] Inspect server configuration
-* [ ] Inspect firewall configuration
-* [ ] Analyze system logs
-* [x] Collect digital evidence (Functional in UI)
-* [x] Collect interview evidence from employees (Dialogue system + Evidence link)
-* [x] Store collected evidence in audit journal (Implemented in AuditStore/Journal)
-
----
-
-# Audit Journal System
-
-* [x] Audit journal interface (Available in AuditHUD tabs)
-* [x] Display collected evidence
-* [x] Display audit controls status
-* [x] Display detected vulnerabilities (Linked to non-compliant findings)
-* [x] Display recommendations (In Risk/Findings tabs)
+- [x] Deplacer le calcul de score final cote serveur.
+- [x] Synchroniser le score serveur vers HUD client sans recalcul local divergent.
+- [x] Journal d'audit present et couvre les actions metier principales (mission, evidence, risk, role).
+- [x] Ajouter verification collaborative des preuves (valider/rejeter evidence).
+- [x] Ajouter gestion des roles (auditeur, audite, observateur).
+- [x] Ajouter matrice d'autorisations complete par action (mission, evidence, finding, risk) cote serveur.
+- [x] Ajouter ecran de gestion des roles (attribution/changement de role en session).
 
 ---
 
-# Mini Security Analysis Features (The "Real Auditor" experience)
+# P1 - Build, run, deploiement
 
-* [ ] **Password Strength Mini-game**: Test real passwords found on NPC computers.
-* [ ] **Log Anomaly Detection**: Analyze a list of login attempts to find brute-force attacks.
-* [ ] **Clear Desk Check**: Search for "Post-it" notes with passwords near NPC desks.
-* [ ] **Network Segregation Map**: Reconstruct the network topology from server data.
-
----
-
-# Report Generation
-
-* [x] Automatic audit report generation (Implemented in reportGenerator.ts)
-* [x] List of audited controls
-* [x] Compliance status of each control
-* [x] List of discovered vulnerabilities
-* [x] Risk analysis summary
-* [x] Security recommendations
-* [x] Final audit score (Calculated in scoringSystem.ts)
+- [ ] Documenter un flux de build production complet client + serveur.
+- [ ] Clarifier la strategie d'hebergement du client (serveur statique ou deploiement separe).
+- [ ] Verifier la coherence Procfile/build output pour publication cloud.
+- [ ] Ajouter une checklist de smoke test post-deploiement.
 
 ---
 
-# Collaboration Features (Based on Existing SkyOffice Features)
+# P2 - UX et fonctionnalites audit
 
-## Video Chat
-* [x] Video meeting between auditors (Native SkyOffice feature)
-* [ ] Interview simulation with employees
-* [ ] Security discussion between team members
-
-## Screen Sharing
-* [x] Share system configuration screens (Native SkyOffice feature)
-* [ ] Demonstrate server configurations
-* [ ] Analyze logs collaboratively
-
-## Whiteboard
-* [x] Draw system architecture (Native SkyOffice feature)
-* [ ] Map network topology
-* [ ] Highlight vulnerabilities
-* [ ] Brainstorm security solutions
+- [ ] Ajouter les boutons export (HTML/CSV) dans l'onglet Overview.
+- [ ] Ajouter un ecran final de rapport (lecture + telechargement).
+- [ ] Ajouter un Room Indicator dans le HUD.
+- [ ] Ajouter interviews NPC a choix multiples pour debloquer certaines preuves.
+- [ ] Ajouter visualisation de pseudo-documents (preuve type document).
 
 ---
 
-# Multiplayer / Collaboration Features
+# P2 - Collaboration avancee
 
-* [x] Multiple auditors in the same virtual office
-* [ ] Collaborative investigation (State is shared via Colyseus)
-* [ ] Shared evidence discovery
-* [ ] Team audit discussion
-
----
-
-# User Interface Features
-
-* [x] Main menu (Room selection/Login)
-* [x] Login system (Character selection and Name)
-* [x] Game HUD interface (AuditHUD)
-* [x] Mission tracker panel (AuditMissionPanel)
-* [x] Evidence popup window (EvidenceCollectionDialog)
-* [x] Audit journal panel (Part of AuditHUD)
-* [ ] **Room Indicator**: Show "Meeting Room", "Director Office", etc., on HUD.
-* [ ] Final report screen (Dedicated UI view to display HTML/PDF)
+- [~] Video et partage d'ecran disponibles (base presente).
+- [ ] Ajouter workflow d'interview collaborative entre joueurs.
+- [ ] Ajouter workflow d'analyse de logs en equipe.
+- [ ] Ajouter workflow de discussion d'audit structuree (decision tracking).
 
 ---
 
-# Office Environment Elements
+# P3 - Qualite logicielle
 
-* [x] Reception desk
-* [x] Employee workstations
-* [x] Meeting room
-* [x] Server room
-* [x] Director's office (Added Smith NPC there)
-* [x] Security equipment objects (Computers, Vending machines, etc.)
-
----
-
-# Technical Features
-
-* [x] Real-time interaction system
-* [x] Player movement engine
-* [x] Object collision system
-* [x] Data storage for audit results (Redux + Colyseus)
-* [x] State management for missions (AuditStore)
-* [x] **Optimized Interaction**: Increased range (48px) for interaction over desks.
-* [x] Modular architecture
+- [ ] Reduire les logs debug en production.
+- [ ] Corriger les anomalies UI mineures detectees (ex: styles invalides).
+- [ ] Ajouter retour utilisateur explicite quand une action est refusee par les permissions serveur.
+- [ ] Ajouter tests unitaires prioritaires:
+	- scoring
+	- mapping reseau
+	- reducers AuditStore
+- [ ] Ajouter au moins un test d'integration du flux mission complet.
 
 ---
 
-# Progress Tracker
+# Meta suivi
 
-Total features planned: 90 (approx)
-Features completed: 68
-Completion percentage: 75 %
+- [ ] Reevaluer ce TODO apres correction P0.
+- [ ] Mettre a jour pourcentage d'avancement sur base des taches verifiees, pas seulement des intentions.
 
 ---
 
-x Each feature will be checked when implemented during development.
+Derniere mise a jour: 02 Avril 2026

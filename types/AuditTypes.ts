@@ -5,6 +5,7 @@ export type ComplianceStatus = 'compliant' | 'non-compliant' | 'partial'
 export type EvidenceType = 'document' | 'log' | 'config' | 'interview' | 'observation'
 export type RiskLevel = 'low' | 'medium' | 'high'
 export type Priority = 'low' | 'medium' | 'high'
+export type AuditRole = 'auditor' | 'auditee' | 'observer'
 
 export interface AuditMission {
   id: string
@@ -142,6 +143,8 @@ export interface AuditState {
   evidenceDialogOpen: boolean
   evidenceTargetName: string
   evidenceTargetId: string
+  complianceDialogOpen: boolean
+  selectedMissionId: string
   activeTab?: 'overview' | 'missions' | 'findings' | 'risks' | 'journal'
 }
 

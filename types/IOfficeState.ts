@@ -1,13 +1,4 @@
 import { Schema, ArraySchema, SetSchema, MapSchema } from '@colyseus/schema'
-import {
-  AuditSessionSchema,
-  MissionSchema,
-  EvidenceSchema,
-  ComplianceFindingSchema,
-  RiskAssessmentSchema,
-  JournalEntrySchema,
-  NotificationSchema,
-} from './AuditTypes'
 
 export interface IPlayer extends Schema {
   name: string
@@ -16,6 +7,7 @@ export interface IPlayer extends Schema {
   anim: string
   readyToConnect: boolean
   videoConnected: boolean
+  role: 'auditor' | 'auditee' | 'observer'
 }
 
 export interface IComputer extends Schema {
@@ -38,11 +30,11 @@ export interface IOfficeState extends Schema {
   computers: MapSchema<IComputer>
   whiteboards: MapSchema<IWhiteboard>
   chatMessages: ArraySchema<IChatMessage>
-  auditSession?: AuditSessionSchema
-  missions?: MapSchema<MissionSchema>
-  evidence?: MapSchema<EvidenceSchema>
-  findings?: MapSchema<ComplianceFindingSchema>
-  risks?: MapSchema<RiskAssessmentSchema>
-  journal?: ArraySchema<JournalEntrySchema>
-  notifications?: ArraySchema<NotificationSchema>
+  auditSession?: any
+  missions: MapSchema<any>
+  evidence: MapSchema<any>
+  findings: MapSchema<any>
+  risks: MapSchema<any>
+  journal: ArraySchema<any>
+  notifications: ArraySchema<any>
 }

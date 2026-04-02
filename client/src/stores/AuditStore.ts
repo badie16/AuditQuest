@@ -28,6 +28,8 @@ const initialState: AuditState = {
   evidenceDialogOpen: false,
   evidenceTargetName: '',
   evidenceTargetId: '',
+  complianceDialogOpen: false,
+  selectedMissionId: '',
   activeTab: 'overview',
 }
 
@@ -48,6 +50,16 @@ const auditSlice = createSlice({
       state.evidenceDialogOpen = false
       state.evidenceTargetName = ''
       state.evidenceTargetId = ''
+    },
+
+    openComplianceDialog: (state, action: PayloadAction<string>) => {
+      state.complianceDialogOpen = true
+      state.selectedMissionId = action.payload
+    },
+
+    closeComplianceDialog: (state) => {
+      state.complianceDialogOpen = false
+      state.selectedMissionId = ''
     },
     // Session management
     initializeAuditSession: (
@@ -106,8 +118,8 @@ const auditSlice = createSlice({
         id: `entry_${Date.now()}`,
         timestamp: Date.now(),
         auditorId: 'current_auditor',
-        action: `Started audit mission: ${mission.name}`,
-        details: `ISO ${mission.isoControl}`,
+        action: `Started audit mission: ${mission.title}`,
+        details: `ISO ${mission.controlId}`,
         missionId: mission.id,
         type: 'mission_started',
       })
@@ -118,7 +130,6 @@ const auditSlice = createSlice({
       if (!mission) return
 
       mission.status = 'completed'
-      mission.completedAt = Date.now()
 
       state.completedMissions = state.completedMissions || []
       // Avoid duplicates
@@ -134,8 +145,8 @@ const auditSlice = createSlice({
         id: `entry_${Date.now()}`,
         timestamp: Date.now(),
         auditorId: 'current_auditor',
-        action: `Completed audit mission: ${mission.name}`,
-        details: `Compliance Status: ${mission.compliance}`,
+        action: `Completed audit mission: ${mission.title}`,
+        details: `Status: ${mission.status}`,
         missionId: mission.id,
         type: 'mission_completed',
       })
@@ -160,7 +171,6 @@ const auditSlice = createSlice({
         mission.status = status
         
         if (status === 'completed') {
-          mission.completedAt = Date.now()
           state.completedMissions = state.completedMissions || []
           // Avoid duplicates in completed list
           if (!state.completedMissions.find(m => m.id === missionId)) {
@@ -209,18 +219,12 @@ const auditSlice = createSlice({
       const activeMission = state.activeMissions?.find((m) => m.id === evidence.missionId)
       if (activeMission) {
         console.log('Adding evidence to active mission:', activeMission)
-        activeMission.collectedEvidence = activeMission.collectedEvidence || []
-        if (!activeMission.collectedEvidence.includes(evidence.id)) {
-            activeMission.collectedEvidence.push(evidence.id)
-        }
+        activeMission.evidenceCollected = (activeMission.evidenceCollected || 0) + 1
       }
       
       const completedMission = state.completedMissions?.find((m) => m.id === evidence.missionId)
       if (completedMission) {
-        completedMission.collectedEvidence = completedMission.collectedEvidence || []
-        if (!completedMission.collectedEvidence.includes(evidence.id)) {
-            completedMission.collectedEvidence.push(evidence.id)
-        }
+        completedMission.evidenceCollected = (completedMission.evidenceCollected || 0) + 1
       }
 
       state.auditJournal = state.auditJournal || []
@@ -238,6 +242,25 @@ const auditSlice = createSlice({
     removeEvidence: (state, action: PayloadAction<string>) => {
       state.collectedEvidence =
         state.collectedEvidence?.filter((e) => e.id !== action.payload) || []
+    },
+
+    updateEvidenceVerification: (
+      state,
+      action: PayloadAction<{
+        evidenceId: string
+        verified: boolean
+        verifiedBy?: string
+        verifiedAt?: number
+      }>
+    ) => {
+      const targetEvidence = state.collectedEvidence?.find(
+        (e) => e.id === action.payload.evidenceId
+      )
+      if (!targetEvidence) return
+
+      targetEvidence.verified = action.payload.verified
+      targetEvidence.verifiedBy = action.payload.verifiedBy
+      targetEvidence.verifiedAt = action.payload.verifiedAt
     },
 
     // Compliance findings
@@ -258,11 +281,6 @@ const auditSlice = createSlice({
         findingId: finding.id,
         type: 'finding_added',
       })
-
-      if (finding.status === 'non-compliant') {
-        state.auditScore = Math.max(0, (state.auditScore || 100) - 10)
-      }
-
 
     },
 
@@ -369,6 +387,7 @@ export const {
   updateMissionEvidence,
   addEvidence,
   removeEvidence,
+  updateEvidenceVerification,
   addFinding,
   updateFinding,
   addRiskAssessment,

@@ -1,12 +1,20 @@
 import { Client, Room } from 'colyseus.js'
 import { IComputer, IOfficeState, IPlayer, IWhiteboard } from '../../../types/IOfficeState'
+import { AuditSession } from '../../../types/AuditTypes'
 import { Message } from '../../../types/Messages'
 import { IRoomData, RoomType } from '../../../types/Rooms'
 import { ItemType } from '../../../types/Items'
 import WebRTC from '../web/WebRTC'
 import { phaserEvents, Event } from '../events/EventCenter'
 import store from '../stores'
-import { setSessionId, setPlayerNameMap, removePlayerNameMap } from '../stores/UserStore'
+import {
+  setSessionId,
+  setPlayerNameMap,
+  removePlayerNameMap,
+  setAuditRole,
+  upsertPlayerDirectory,
+  removePlayerDirectory,
+} from '../stores/UserStore'
 import {
   setLobbyJoined,
   setJoinedRoomData,
@@ -24,11 +32,13 @@ import {
   initializeAuditSession,
   addMission,
   addEvidence,
+  updateEvidenceVerification,
   addJournalEntry,
   updateMissionStatus,
   updateMissionEvidence,
   addFinding,
   addRiskAssessment,
+  updateAuditScore,
 } from '../stores/AuditStore'
 
 export default class Network {
@@ -104,13 +114,15 @@ export default class Network {
 
     this.room.state.listen('auditSession', (currentValue) => {
       if (currentValue) {
+        const session = currentValue as unknown as AuditSession
         store.dispatch(
           initializeAuditSession({
-            sessionId: currentValue.sessionId,
-            status: currentValue.status as any,
-            startDate: new Date(currentValue.startTime).toISOString(),
+            sessionId: session.sessionId,
+            status: session.status as any,
+            startDate: new Date(session.startTime).toISOString(),
           })
         )
+        store.dispatch(updateAuditScore(session.totalScore ?? 100))
         // Trigger marker update once session is loaded
         phaserEvents.emit(Event.UPDATE_AUDIT_STATE)
       }
@@ -172,6 +184,25 @@ export default class Network {
           verified: evidence.verified,
         })
       )
+
+      evidence.onChange = (changes) => {
+        changes.forEach((change) => {
+          if (
+            change.field === 'verified' ||
+            change.field === 'verifiedBy' ||
+            change.field === 'verifiedAt'
+          ) {
+            store.dispatch(
+              updateEvidenceVerification({
+                evidenceId: evidence.id,
+                verified: evidence.verified,
+                verifiedBy: evidence.verifiedBy,
+                verifiedAt: evidence.verifiedAt,
+              })
+            )
+          }
+        })
+      }
     }
 
     this.room.state.findings.onAdd = (finding, key) => {
@@ -179,12 +210,12 @@ export default class Network {
         addFinding({
           id: finding.id,
           missionId: finding.missionId,
-          controlId: finding.missionId, // missionId is controlId in this system
           status: finding.status as any,
+          evidence: Array.from(finding.evidence),
           justification: finding.justification,
           auditorId: finding.auditorId,
-          timestamp: finding.createdAt,
-          relatedEvidence: Array.from(finding.evidence),
+          createdAt: finding.createdAt,
+          lastModified: finding.lastModified,
         })
       )
     }
@@ -221,10 +252,34 @@ export default class Network {
     // --- OFFICE STATE SYNCHRONIZATION ---
 
     this.room.state.players.onAdd = (player: IPlayer, key: string) => {
-      if (key === this.mySessionId) return
+      store.dispatch(
+        upsertPlayerDirectory({
+          id: key,
+          name: player.name || 'Anonymous',
+          role: player.role,
+        })
+      )
+
+      if (key === this.mySessionId) {
+        store.dispatch(setAuditRole(player.role))
+      }
       player.onChange = (changes) => {
         changes.forEach((change) => {
           const { field, value } = change
+          if (field === 'role' && key === this.mySessionId) {
+            store.dispatch(setAuditRole(value as any))
+          }
+
+          const nextName = field === 'name' ? String(value || '') : player.name
+          const nextRole = field === 'role' ? (value as any) : player.role
+          store.dispatch(
+            upsertPlayerDirectory({
+              id: key,
+              name: nextName || 'Anonymous',
+              role: nextRole,
+            })
+          )
+
           phaserEvents.emit(Event.PLAYER_UPDATED, field, value, key)
           if (field === 'name' && value !== '') {
             phaserEvents.emit(Event.PLAYER_JOINED, player, key)
@@ -241,6 +296,7 @@ export default class Network {
       this.webRTC?.deleteOnCalledVideoStream(key)
       store.dispatch(pushPlayerLeftMessage(player.name))
       store.dispatch(removePlayerNameMap(key))
+      store.dispatch(removePlayerDirectory(key))
     }
 
     this.room.state.computers.onAdd = (computer: IComputer, key: string) => {
@@ -327,33 +383,33 @@ export default class Network {
   }
 
   updatePlayer(currentX: number, currentY: number, currentAnim: string) {
-    if (this.room && this.room.connection.isOpen) {
+    if (this.room) {
       this.room.send(Message.UPDATE_PLAYER, { x: currentX, y: currentY, anim: currentAnim })
     }
   }
 
   updatePlayerName(currentName: string) {
-    if (this.room && this.room.connection.isOpen) {
+    if (this.room) {
       this.room.send(Message.UPDATE_PLAYER_NAME, { name: currentName })
     }
   }
 
   readyToConnect() {
-    if (this.room && this.room.connection.isOpen) {
+    if (this.room) {
       this.room.send(Message.READY_TO_CONNECT)
     }
     phaserEvents.emit(Event.MY_PLAYER_READY)
   }
 
   videoConnected() {
-    if (this.room && this.room.connection.isOpen) {
+    if (this.room) {
       this.room.send(Message.VIDEO_CONNECTED)
     }
     phaserEvents.emit(Event.MY_PLAYER_VIDEO_CONNECTED)
   }
 
   playerStreamDisconnect(id: string) {
-    if (this.room && this.room.connection.isOpen) {
+    if (this.room) {
       this.room.send(Message.DISCONNECT_STREAM, { clientId: id })
     }
     this.webRTC?.deleteVideoStream(id)
@@ -383,6 +439,18 @@ export default class Network {
   addRisk(findingId: string, probability: string, impact: string, recommendation: string) {
     if (this.room) {
       this.room.send(Message.ADD_RISK, { findingId, probability, impact, recommendation })
+    }
+  }
+
+  verifyEvidence(evidenceId: string, verified: boolean) {
+    if (this.room) {
+      this.room.send(Message.VERIFY_EVIDENCE, { evidenceId, verified })
+    }
+  }
+
+  changePlayerRole(targetPlayerId: string, role: 'auditor' | 'auditee' | 'observer') {
+    if (this.room) {
+      this.room.send(Message.CHANGE_PLAYER_ROLE, { targetPlayerId, role })
     }
   }
 

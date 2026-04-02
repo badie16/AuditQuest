@@ -71,17 +71,21 @@ export default class MyPlayer extends Player {
     }
 
     if (Phaser.Input.Keyboard.JustDown(keyR)) {
-      // Check if the selected item exists and has an ID
-      const itemId = (item as any)?.id
+      // Check if the selected item exists and has an ID or targetObjectId
+      const itemId = (item as any)?.id || (item as any)?.targetObjectId
       if (itemId) {
         const activeMissions = store.getState().audit.activeMissions
+        console.log('[Audit] Checking missions for itemId:', itemId)
+        console.log('[Audit] Active missions:', activeMissions.map(m => `${m.id}: target=${m.targetObjectId}, status=${m.status}`))
+        
         const mission = activeMissions.find(
           (m) =>
             m.targetObjectId === itemId &&
-            (m.status === 'not_started' || m.status === 'in-progress')
+            (m.status === 'pending' || m.status === 'in-progress')
         )
 
         if (mission) {
+          console.log('[Audit] Found matching mission:', mission.title)
           store.dispatch(
             openEvidenceDialog({
               targetName: mission.title,

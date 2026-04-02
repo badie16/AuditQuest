@@ -1,9 +1,19 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../stores'
+import phaserGame from '../PhaserGame'
+import Game from '../scenes/Game'
 
 export default function EvidenceTab() {
   const evidence = useSelector((state: RootState) => state.audit.collectedEvidence) || []
+  const auditRole = useSelector((state: RootState) => state.user.auditRole)
+
+  const handleVerifyEvidence = (evidenceId: string, verified: boolean) => {
+    const game = phaserGame.scene.keys.game as Game
+    const network = game?.network
+    if (!network) return
+    network.verifyEvidence(evidenceId, verified)
+  }
 
   return (
     <div className="audit-tab-content">
@@ -23,6 +33,7 @@ export default function EvidenceTab() {
                 <th>Type</th>
                 <th>Description</th>
                 <th>Location</th>
+                <th>Verification</th>
                 <th>Collected At</th>
               </tr>
             </thead>
@@ -39,6 +50,30 @@ export default function EvidenceTab() {
                     {item.notes && <div className="evidence-notes">{item.notes}</div>}
                   </td>
                   <td>{item.location}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className={`pixel-chip ${item.verified ? 'evidence-document' : 'evidence-observation'}`}>
+                        {item.verified ? 'verified' : 'pending'}
+                      </span>
+                      {auditRole === 'auditor' && (
+                        item.verified ? (
+                          <button
+                            className="pixel-btn secondary"
+                            onClick={() => handleVerifyEvidence(item.id, false)}
+                          >
+                            Revoke
+                          </button>
+                        ) : (
+                          <button
+                            className="pixel-btn primary"
+                            onClick={() => handleVerifyEvidence(item.id, true)}
+                          >
+                            Verify
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <span className="time-stamp">
                       {new Date(item.collectionTime).toLocaleTimeString()}

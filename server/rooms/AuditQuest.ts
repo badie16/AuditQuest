@@ -21,12 +21,20 @@ import ChatMessageUpdateCommand from './commands/ChatMessageUpdateCommand'
 import { InitializeAuditMissionsCommand, StartMissionCommand, CompleteMissionCommand } from './commands/AuditMissionCommand'
 import { CollectEvidenceCommand, VerifyEvidenceCommand, RemoveEvidenceCommand } from './commands/EvidenceCollectionCommand'
 import { CreateRiskAssessmentCommand } from './commands/RiskAssessmentCommand'
+import { ChangePlayerRoleCommand } from './commands/PlayerRoleCommand'
+
+type AuditRole = 'auditor' | 'auditee' | 'observer'
 
 export class AuditQuest extends Room<OfficeState> {
   private dispatcher = new Dispatcher(this)
-  private name: string
-  private description: string
+  private name!: string
+  private description!: string
   private password: string | null = null
+
+  private isAllowed(client: Client, allowedRoles: AuditRole[]): boolean {
+    const player = this.state.players.get(client.sessionId)
+    return !!player && allowedRoles.includes(player.role as AuditRole)
+  }
 
   async onCreate(options: IRoomData) {
     const { name, description, password, autoDispose } = options
@@ -49,6 +57,8 @@ export class AuditQuest extends Room<OfficeState> {
     this.state.auditSession.sessionId = `audit-${Date.now()}`
     this.state.auditSession.status = 'in-progress'
     this.state.auditSession.startTime = Date.now()
+    this.state.auditSession.totalScore = 100
+    this.state.auditSession.completionPercentage = 0
 
     // Initialize Missions automatically on create
     this.dispatcher.dispatch(new InitializeAuditMissionsCommand(), {})
@@ -67,6 +77,7 @@ export class AuditQuest extends Room<OfficeState> {
 
     // when receiving startMission message
     this.onMessage(Message.START_MISSION, (client, message: { missionId: string }) => {
+      if (!this.isAllowed(client, ['auditor'])) return
       this.dispatcher.dispatch(new StartMissionCommand(), {
         client,
         missionId: message.missionId,
@@ -79,6 +90,7 @@ export class AuditQuest extends Room<OfficeState> {
       compliance: 'compliant' | 'non-compliant' | 'partial',
       justification: string
     }) => {
+      if (!this.isAllowed(client, ['auditor'])) return
       this.dispatcher.dispatch(new CompleteMissionCommand(), {
         client,
         missionId: message.missionId,
@@ -94,12 +106,26 @@ export class AuditQuest extends Room<OfficeState> {
       description: string,
       location: string
     }) => {
+      if (!this.isAllowed(client, ['auditor', 'auditee'])) return
       this.dispatcher.dispatch(new CollectEvidenceCommand(), {
         client,
         missionId: message.missionId,
         type: message.type,
         description: message.description,
         location: message.location,
+      })
+    })
+
+    // when receiving verifyEvidence message
+    this.onMessage(Message.VERIFY_EVIDENCE, (client, message: {
+      evidenceId: string
+      verified: boolean
+    }) => {
+      if (!this.isAllowed(client, ['auditor'])) return
+      this.dispatcher.dispatch(new VerifyEvidenceCommand(), {
+        client,
+        evidenceId: message.evidenceId,
+        verified: message.verified,
       })
     })
 
@@ -110,6 +136,7 @@ export class AuditQuest extends Room<OfficeState> {
       impact: 'low' | 'medium' | 'high',
       recommendation: string
     }) => {
+      if (!this.isAllowed(client, ['auditor'])) return
       this.dispatcher.dispatch(new CreateRiskAssessmentCommand(), {
         client,
         findingId: message.findingId,
@@ -118,6 +145,18 @@ export class AuditQuest extends Room<OfficeState> {
         recommendation: message.recommendation,
       })
     })
+
+    this.onMessage(
+      Message.CHANGE_PLAYER_ROLE,
+      (client, message: { targetPlayerId: string; role: AuditRole }) => {
+        if (!this.isAllowed(client, ['auditor'])) return
+        this.dispatcher.dispatch(new ChangePlayerRoleCommand(), {
+          client,
+          targetPlayerId: message.targetPlayerId,
+          role: message.role,
+        })
+      }
+    )
 
     // --- OFFICE MESSAGES ---
 
@@ -140,7 +179,7 @@ export class AuditQuest extends Room<OfficeState> {
     // when a player stop sharing screen
     this.onMessage(Message.STOP_SCREEN_SHARE, (client, message: { computerId: string }) => {
       const computer = this.state.computers.get(message.computerId)
-      computer.connectedUser.forEach((id) => {
+      computer.connectedUser.forEach((id: string) => {
         this.clients.forEach((cli) => {
           if (cli.sessionId === id && cli.sessionId !== client.sessionId) {
             cli.send(Message.STOP_SCREEN_SHARE, client.sessionId)
@@ -229,6 +268,9 @@ export class AuditQuest extends Room<OfficeState> {
 
   async onAuth(client: Client, options: { password: string | null }) {
     if (this.password) {
+      if (typeof options.password !== 'string') {
+        throw new ServerError(403, 'Password is required!')
+      }
       const validPassword = await bcrypt.compare(options.password, this.password)
       if (!validPassword) {
         throw new ServerError(403, 'Password is incorrect!')
@@ -238,7 +280,9 @@ export class AuditQuest extends Room<OfficeState> {
   }
 
   onJoin(client: Client, options: any) {
-    this.state.players.set(client.sessionId, new Player())
+    const player = new Player()
+    player.role = this.state.players.size === 0 ? 'auditor' : 'observer'
+    this.state.players.set(client.sessionId, player)
     client.send(Message.SEND_ROOM_DATA, {
       id: this.roomId,
       name: this.name,
@@ -250,12 +294,12 @@ export class AuditQuest extends Room<OfficeState> {
     if (this.state.players.has(client.sessionId)) {
       this.state.players.delete(client.sessionId)
     }
-    this.state.computers.forEach((computer) => {
+    this.state.computers.forEach((computer: Computer) => {
       if (computer.connectedUser.has(client.sessionId)) {
         computer.connectedUser.delete(client.sessionId)
       }
     })
-    this.state.whiteboards.forEach((whiteboard) => {
+    this.state.whiteboards.forEach((whiteboard: Whiteboard) => {
       if (whiteboard.connectedUser.has(client.sessionId)) {
         whiteboard.connectedUser.delete(client.sessionId)
       }
@@ -263,7 +307,7 @@ export class AuditQuest extends Room<OfficeState> {
   }
 
   onDispose() {
-    this.state.whiteboards.forEach((whiteboard) => {
+    this.state.whiteboards.forEach((whiteboard: Whiteboard) => {
       if (whiteboardRoomIds.has(whiteboard.roomId)) whiteboardRoomIds.delete(whiteboard.roomId)
     })
 
