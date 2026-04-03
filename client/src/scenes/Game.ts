@@ -32,6 +32,9 @@ export default class Game extends Phaser.Scene {
   private keyR!: Phaser.Input.Keyboard.Key
   private keyF!: Phaser.Input.Keyboard.Key
   private map!: Phaser.Tilemaps.Tilemap
+  private frameCounter = 0
+  private roomShadowOverlay!: Phaser.GameObjects.Rectangle
+  private roomLightHole!: Phaser.GameObjects.Graphics
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
   private otherPlayers!: Phaser.Physics.Arcade.Group
@@ -136,7 +139,12 @@ export default class Game extends Phaser.Scene {
     const vendingMachines = this.physics.add.staticGroup({ classType: VendingMachine })
     const vendingMachineLayer = this.map.getObjectLayer('VendingMachine')
     vendingMachineLayer.objects.forEach((obj, i) => {
-      const item = this.addObjectFromTiled(vendingMachines, obj, 'vendingmachines', 'vendingmachine') as VendingMachine
+      const item = this.addObjectFromTiled(
+        vendingMachines,
+        obj,
+        'vendingmachines',
+        'vendingmachine'
+      ) as VendingMachine
       const id = obj.properties?.find((p) => p.name === 'id')?.value?.toString() || `vending_${i}`
       item.id = id
       this.vendingMachineMap.set(id, item)
@@ -160,8 +168,15 @@ export default class Game extends Phaser.Scene {
     NPCS_DATA.forEach((data, index) => {
       // Find a suitable chair for each NPC based on their data or index
       // In a real scenario, we might want to specify chair IDs in NPCS_DATA
-      const chairIndex = data.id === 'npc_director' ? 8 : (data.id === 'npc_manager' ? 15 : (data.id === 'npc_hr' ? 10 : 20))
-      
+      const chairIndex =
+        data.id === 'npc_director'
+          ? 8
+          : data.id === 'npc_manager'
+            ? 15
+            : data.id === 'npc_hr'
+              ? 10
+              : 20
+
       if (allChairs[chairIndex]) {
         // Instantiate NPC with the correct arguments (including portrait)
         const npc = npcs.get(0, 0, data.texture) as NPC
@@ -169,7 +184,7 @@ export default class Game extends Phaser.Scene {
         npc.dialogueText = data.dialogue
         npc.portrait = data.portrait // Set property
         npc.targetObjectId = data.id // Set targetObjectId for evidence linking
-        
+
         // Re-initialize using constructor-like logic if needed, or simply ensure properties are set.
         // Since Phaser group.get() reuses objects, we must manually set properties if the constructor isn't called again.
         // However, here we are likely creating new ones initially.
@@ -184,6 +199,8 @@ export default class Game extends Phaser.Scene {
 
     this.cameras.main.zoom = 1.5
     this.cameras.main.startFollow(this.myPlayer, true)
+
+    this.createRoomLighting()
 
     this.physics.add.collider([this.myPlayer, this.myPlayer.playerContainer], groundLayer)
     this.physics.add.collider([this.myPlayer, this.myPlayer.playerContainer], vendingMachines)
@@ -216,11 +233,13 @@ export default class Game extends Phaser.Scene {
 
     // Initial sync
     this.syncMissions()
+    this.updateRoomIndicator()
+    this.updateRoomLighting()
   }
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
     const currentItem = playerSelector.selectedItem as Item
-    
+
     // Always prioritize NPCs over any other item if they overlap
     if (currentItem?.itemType === ItemType.NPC && selectionItem.itemType !== ItemType.NPC) {
       return
@@ -342,24 +361,31 @@ export default class Game extends Phaser.Scene {
 
     // Set markers for objects that have active missions
     activeMissions.forEach((mission) => {
-      console.log(`[Audit] Checking mission ${mission.id} status: ${mission.status} target: ${mission.targetObjectId}`)
+      console.log(
+        `[Audit] Checking mission ${mission.id} status: ${mission.status} target: ${mission.targetObjectId}`
+      )
       // ONLY show markers for IN-PROGRESS missions in the scenario sequence
       if (mission.status === 'in-progress') {
         if (mission.targetObjectId) {
           // Check all maps for the target object
-          const item = this.itemMap.get(mission.targetObjectId) || 
-                       this.npcMap.get(mission.targetObjectId) ||
-                       this.computerMap.get(mission.targetObjectId) ||
-                       this.whiteboardMap.get(mission.targetObjectId) ||
-                       this.vendingMachineMap.get(mission.targetObjectId)
+          const item =
+            this.itemMap.get(mission.targetObjectId) ||
+            this.npcMap.get(mission.targetObjectId) ||
+            this.computerMap.get(mission.targetObjectId) ||
+            this.whiteboardMap.get(mission.targetObjectId) ||
+            this.vendingMachineMap.get(mission.targetObjectId)
 
           const hasEvidence = mission.evidenceCollected > 0
 
           if (item) {
-            console.log(`[Audit] SUCCESS: Found item for target ${mission.targetObjectId}. Setting status.`)
+            console.log(
+              `[Audit] SUCCESS: Found item for target ${mission.targetObjectId}. Setting status.`
+            )
             item.setMissionStatus(hasEvidence ? 'completed' : 'active')
           } else {
-            console.warn(`[Audit] WARNING: Target item ${mission.targetObjectId} not found in any map!`)
+            console.warn(
+              `[Audit] WARNING: Target item ${mission.targetObjectId} not found in any map!`
+            )
           }
         }
       }
@@ -386,16 +412,83 @@ export default class Game extends Phaser.Scene {
     }
   }
 
+  private createRoomLighting() {
+    const width = this.cameras.main.width
+    const height = this.cameras.main.height
+
+    this.roomShadowOverlay = this.add
+      .renderTexture(0, 0, width, height)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(9000)
+
+    this.roomLightHole = this.add
+      .graphics()
+      .setScrollFactor(0)
+      .setDepth(9000)
+      .setBlendMode(Phaser.BlendModes.ERASE)
+
+    this.updateRoomLighting()
+  }
+
+  private updateRoomLighting() {
+    if (!this.myPlayer || !this.roomShadowOverlay) return
+
+    const rt = this.roomShadowOverlay as Phaser.GameObjects.RenderTexture
+    const camera = this.cameras.main
+
+    const holeSize = 250
+    const radius = holeSize / 2
+
+    const screenX = Phaser.Math.Clamp(
+      this.myPlayer.x - camera.scrollX,
+      radius,
+      camera.width - radius
+    )
+
+    const screenY = Phaser.Math.Clamp(
+      this.myPlayer.y - camera.scrollY,
+      radius,
+      camera.height - radius
+    )
+
+    // 🔥 clear previous frame
+    rt.clear()
+
+    // 🔥 draw dark overlay
+    rt.fill(0x000000, 0.9)
+
+    // 🔥 create hole
+    const graphics = this.add.graphics()
+    graphics.fillStyle(0xffffff)
+    graphics.fillCircle(screenX, screenY, radius)
+
+    // 🔥 ERASE hole
+    rt.erase(graphics)
+
+    graphics.destroy()
+  }
+
   update(t: number, dt: number) {
+    this.frameCounter += 1
+
     if (this.myPlayer && this.network) {
       this.playerSelector.update(this.myPlayer, this.cursors)
-      this.myPlayer.update(this.playerSelector, this.cursors, this.keyE, this.keyR, this.keyF, this.network)
+      this.myPlayer.update(
+        this.playerSelector,
+        this.cursors,
+        this.keyE,
+        this.keyR,
+        this.keyF,
+        this.network
+      )
     }
-    
+
     // Only sync missions and room every 30 frames for performance
-    if (this.scene.systems.animatingFrames % 30 === 0) {
+    if (this.frameCounter % 30 === 0) {
       this.syncMissions()
       this.updateRoomIndicator()
+      this.updateRoomLighting()
     }
   }
 }

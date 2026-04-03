@@ -5,6 +5,7 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
   private dialogBox!: Phaser.GameObjects.Container
   private statusBox!: Phaser.GameObjects.Container
   private missionMarker!: Phaser.GameObjects.Text
+  id?: string
   itemType!: ItemType
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
@@ -50,7 +51,7 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
 
     this.missionMarker.setVisible(true)
     this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 20)
-    
+
     if (status === 'active') {
       this.missionMarker.setText('⭐') // Star for active mission
       this.missionMarker.setColor('#FFD700') // Gold

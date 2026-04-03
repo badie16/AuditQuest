@@ -162,9 +162,9 @@ export default class Network {
 
       mission.collectedEvidence.onAdd = (evId, index) => {
         store.dispatch(
-          updateMissionEvidence({ 
-            missionId: mission.id, 
-            evidenceCount: mission.collectedEvidence.length 
+          updateMissionEvidence({
+            missionId: mission.id,
+            evidenceCount: mission.collectedEvidence.length,
           })
         )
         phaserEvents.emit(Event.UPDATE_AUDIT_STATE)
@@ -262,6 +262,7 @@ export default class Network {
 
       if (key === this.mySessionId) {
         store.dispatch(setAuditRole(player.role))
+        return
       }
       player.onChange = (changes) => {
         changes.forEach((change) => {

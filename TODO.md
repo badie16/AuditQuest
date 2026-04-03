@@ -3,6 +3,7 @@
 Ce backlog est aligne sur l'etat reel du code au 02 Avril 2026.
 
 Convention:
+
 - [ ] A faire
 - [~] En cours / partiel
 - [x] Termine
@@ -45,8 +46,26 @@ Convention:
 - [ ] Ajouter les boutons export (HTML/CSV) dans l'onglet Overview.
 - [ ] Ajouter un ecran final de rapport (lecture + telechargement).
 - [ ] Ajouter un Room Indicator dans le HUD.
+- [x] Ajouter un systeme de visibilite par salle avec ombres sur les zones non actives.
 - [ ] Ajouter interviews NPC a choix multiples pour debloquer certaines preuves.
 - [ ] Ajouter visualisation de pseudo-documents (preuve type document).
+
+---
+
+# P2 - Story mode et narration
+
+- [ ] Definir une histoire de depart pour l'entreprise (nom, secteur, contexte, problemes, objectifs d'audit).
+- [ ] Ajouter une ecran / dialogue d'introduction au lancement de la partie, avant les missions.
+- [ ] Transformer le briefing de mission en briefing narratif lie a l'histoire de l'entreprise.
+- [ ] Organiser les missions en chapitres de story, pas en liste aleatoire.
+- [ ] Ajouter des dependances de missions basees sur la progression narrative.
+- [ ] Ajouter des dialogues de mission avec contexte, objectif et consequence, pas un simple message unique.
+- [ ] Permettre des interactions de dialogue plus riches avec les PNJ (questions / reponses / choix).
+- [ ] Relier chaque mission a un lieu, un acteur, et un enjeu narratif precis.
+- [ ] Ajouter des etats de story (debut, investigation, escalade, conclusion) pour piloter les dialogues.
+- [ ] Faire evoluer les dialogues des PNJ selon les preuves deja collectees.
+- [ ] Ajouter un texte de mission plus pro avec nom de l'entreprise, departement concerne et raison de l'audit.
+- [ ] Ajouter une vraie progression de campagne avec mission d'ouverture, milieu de parcours et cloture.
 
 ---
 
@@ -65,9 +84,9 @@ Convention:
 - [ ] Corriger les anomalies UI mineures detectees (ex: styles invalides).
 - [ ] Ajouter retour utilisateur explicite quand une action est refusee par les permissions serveur.
 - [ ] Ajouter tests unitaires prioritaires:
-	- scoring
-	- mapping reseau
-	- reducers AuditStore
+  - scoring
+  - mapping reseau
+  - reducers AuditStore
 - [ ] Ajouter au moins un test d'integration du flux mission complet.
 
 ---
