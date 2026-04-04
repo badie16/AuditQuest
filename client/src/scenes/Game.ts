@@ -477,18 +477,18 @@ export default class Game extends Phaser.Scene {
       camera.height - radius
     )
 
-    // 🔥 clear previous frame
+    // clear previous frame
     rt.clear()
 
-    // 🔥 draw dark overlay
+    // draw dark overlay
     rt.fill(0x000000, 0.9)
 
-    // 🔥 create hole
+    // create circular transparent hole around the player
     const graphics = this.add.graphics()
     graphics.fillStyle(0xffffff)
     graphics.fillCircle(screenX, screenY, radius)
 
-    // 🔥 ERASE hole
+    // erase the circle from the overlay
     rt.erase(graphics)
 
     graphics.destroy()

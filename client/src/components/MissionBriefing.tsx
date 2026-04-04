@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setCurrentMission } from '../stores/AuditStore'
 import { RootState } from '../stores'
 import { BackgroundMode } from '../../../types/BackgroundMode'
+import { STORY_CHAPTERS, STORY_COMPANY } from '../../../types/AuditData'
 import './AuditHUD.scss'
 
 interface MissionBriefingProps {
@@ -27,6 +28,8 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
     ? ((mission.collectedEvidence?.length || 0) / mission.evidenceRequired.length) * 100
     : 0
 
+  const chapter = STORY_CHAPTERS.find((item) => item.id === mission.chapterId)
+
   const themeClass = backgroundMode === BackgroundMode.DAY ? 'theme-day' : 'theme-night'
 
   return (
@@ -42,21 +45,32 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
         <div className="audit-hud__content">
           <div className="mission-briefing-body">
             <div className="briefing-section">
-              <div className="briefing-control-badge">
-                ISO {mission.isoControl}
-              </div>
+              <div className="briefing-control-badge">ISO {mission.isoControl}</div>
+              <div className="briefing-label">{STORY_COMPANY.name}</div>
+              {chapter && (
+                <div className="briefing-label">
+                  Chapter {chapter.order}: {chapter.title}
+                </div>
+              )}
               <h2 className="briefing-title">{mission.name}</h2>
             </div>
 
             <div className="briefing-card">
               <div className="briefing-label">Objective</div>
               <p className="briefing-text">{mission.description}</p>
+              {mission.storyContext && (
+                <p className="briefing-text small">{mission.storyContext}</p>
+              )}
             </div>
 
             <div className="briefing-grid">
               <div className="briefing-stat">
                 <div className="briefing-label">Location</div>
                 <div className="briefing-value">{mission.zone || 'Office Area'}</div>
+                <div className="briefing-label" style={{ marginTop: '8px' }}>
+                  Actor
+                </div>
+                <div className="briefing-value">{mission.actor || 'Unknown contact'}</div>
               </div>
               <div className="briefing-stat">
                 <div className="briefing-label">Priority</div>
@@ -68,10 +82,14 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
 
             <div className="briefing-section">
               <div className="briefing-label">
-                Evidence Required ({mission.collectedEvidence?.length || 0}/{mission.evidenceRequired?.length || 0})
+                Evidence Required ({mission.collectedEvidence?.length || 0}/
+                {mission.evidenceRequired?.length || 0})
               </div>
               <div className="pixel-progress-bar large">
-                <div className="pixel-progress-fill" style={{ width: `${completionPercentage}%` }} />
+                <div
+                  className="pixel-progress-fill"
+                  style={{ width: `${completionPercentage}%` }}
+                />
               </div>
 
               <div className="evidence-requirements-list">
@@ -86,8 +104,14 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
             <div className="briefing-tips-card">
               <div className="briefing-label">Field Tips</div>
               <p className="briefing-text small">
-                Explore the office and interact with items. Look for files, terminal logs, and speak with staff members to gather necessary proof.
+                Explore the office and interact with items. Look for files, terminal logs, and speak
+                with staff members to gather necessary proof.
               </p>
+              {mission.consequence && (
+                <p className="briefing-text small">
+                  If this control is weak: {mission.consequence}
+                </p>
+              )}
             </div>
           </div>
         </div>
