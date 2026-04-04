@@ -2,6 +2,7 @@ import { Command } from '@colyseus/command'
 import { OfficeState } from '../schema/OfficeState'
 import { JournalEntrySchema, NotificationSchema } from '../schema/AuditState'
 import { v4 as uuid } from 'uuid'
+import { canPerformAction } from '../../utils/authMatrix'
 
 type AuditRole = 'auditor' | 'auditee' | 'observer'
 
@@ -16,7 +17,7 @@ export class ChangePlayerRoleCommand extends Command<OfficeState> {
     role: AuditRole
   }) {
     const actor = client ? this.state.players.get(client.sessionId) : undefined
-    if (!actor || actor.role !== 'auditor') {
+    if (!actor || !canPerformAction(actor.role, 'manage_roles')) {
       console.error(`Unauthorized role change by ${client?.sessionId || 'unknown'}`)
       return
     }

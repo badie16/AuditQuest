@@ -22,6 +22,7 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { setCurrentRoom } from '../stores/UserStore'
+import { openEvidenceDialog } from '../stores/AuditStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { NPCS_DATA } from '../../../types/AuditData'
 
@@ -33,7 +34,7 @@ export default class Game extends Phaser.Scene {
   private keyF!: Phaser.Input.Keyboard.Key
   private map!: Phaser.Tilemaps.Tilemap
   private frameCounter = 0
-  private roomShadowOverlay!: Phaser.GameObjects.Rectangle
+  private roomShadowOverlay!: Phaser.GameObjects.RenderTexture
   private roomLightHole!: Phaser.GameObjects.Graphics
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
@@ -231,10 +232,34 @@ export default class Game extends Phaser.Scene {
     this.network.onItemUserRemoved(this.handleItemUserRemoved, this)
     this.network.onChatMessageAdded(this.handleChatMessageAdded, this)
 
+    // Handle mission star clicks
+    this.events.on('mission-marker-clicked', this.handleMissionMarkerClicked, this)
+
     // Initial sync
     this.syncMissions()
     this.updateRoomIndicator()
     this.updateRoomLighting()
+  }
+
+  private handleMissionMarkerClicked(targetId: string) {
+    if (!targetId) return
+
+    const activeMissions = store.getState().audit.activeMissions
+    const mission = activeMissions.find(
+      (m) =>
+        m.targetObjectId === targetId &&
+        (m.status === 'pending' || m.status === 'in-progress')
+    )
+
+    if (mission) {
+      console.log('[Audit] Mission marker clicked. Opening dialog for:', mission.title)
+      store.dispatch(
+        openEvidenceDialog({
+          targetName: mission.title,
+          targetId: targetId,
+        })
+      )
+    }
   }
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
@@ -364,8 +389,8 @@ export default class Game extends Phaser.Scene {
       console.log(
         `[Audit] Checking mission ${mission.id} status: ${mission.status} target: ${mission.targetObjectId}`
       )
-      // ONLY show markers for IN-PROGRESS missions in the scenario sequence
-      if (mission.status === 'in-progress') {
+      // Show markers for all non-completed missions (to perform as tasks)
+      if (mission.status !== 'completed') {
         if (mission.targetObjectId) {
           // Check all maps for the target object
           const item =
@@ -434,7 +459,7 @@ export default class Game extends Phaser.Scene {
   private updateRoomLighting() {
     if (!this.myPlayer || !this.roomShadowOverlay) return
 
-    const rt = this.roomShadowOverlay as Phaser.GameObjects.RenderTexture
+    const rt = this.roomShadowOverlay
     const camera = this.cameras.main
 
     const holeSize = 250

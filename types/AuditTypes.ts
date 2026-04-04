@@ -3,7 +3,7 @@
 export type AuditStatus = 'pending' | 'in-progress' | 'completed'
 export type ComplianceStatus = 'compliant' | 'non-compliant' | 'partial'
 export type EvidenceType = 'document' | 'log' | 'config' | 'interview' | 'observation'
-export type RiskLevel = 'low' | 'medium' | 'high'
+export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 export type Priority = 'low' | 'medium' | 'high'
 export type AuditRole = 'auditor' | 'auditee' | 'observer'
 
@@ -24,6 +24,8 @@ export interface AuditMission {
   dueDate: string
   targetObjectId?: string
   targetRoom?: string
+  compliance?: ComplianceStatus
+  justification?: string
 }
 
 export interface Evidence {
@@ -248,13 +250,24 @@ export const EVIDENCE_TEMPLATES = {
   },
 }
 
-// Scoring Constants
+// Scoring Constants (6-Step Methodology)
+export const DOMAIN_MAPPING: Record<string, {name: string, weight: number}> = {
+  'server_room': { name: 'Network & Data Security', weight: 0.4 },
+  'workstation': { name: 'Endpoint Security', weight: 0.3 },
+  'ceo_office': { name: 'Management & Access', weight: 0.15 },
+  'reception': { name: 'Physical Security', weight: 0.15 },
+  'office': { name: 'Organizational Security', weight: 0.15 },
+  'default': { name: 'General Security', weight: 0.2 }
+}
+
 export const AUDIT_SCORING = {
-  BASE_SCORE: 100,
-  CONTROL_AUDITED: 5,
-  NON_COMPLIANT_PENALTY: -10,
-  INCOMPLETE_EVIDENCE_PENALTY: -5,
-  THOROUGH_DOCUMENTATION_BONUS: 5,
+  CONTROL_COMPLIANT: 10,
+  CONTROL_PARTIAL: 5,
+  CONTROL_NON_COMPLIANT: 0,
+  PENALTY_CRITICAL_RISK: -4,
+  PENALTY_HIGH_RISK: -3,
+  PENALTY_MEDIUM_RISK: -2,
+  PENALTY_LOW_RISK: -1,
   MAX_SCORE: 100,
   MIN_SCORE: 0,
 }

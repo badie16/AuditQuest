@@ -5,38 +5,8 @@ import { AUDIT_MISSIONS } from '../../../types/AuditData'
 import { AUDIT_SCORING } from '../../../types/AuditTypes'
 import { v4 as uuid } from 'uuid'
 
-function updateAuditSessionMetrics(state: OfficeState) {
-  const totalMissions = state.missions.size
-  let completedMissions = 0
-  let nonCompliantCount = 0
-
-  state.missions.forEach((mission) => {
-    if (mission.status === 'completed') {
-      completedMissions += 1
-      if (mission.compliance === 'non-compliant') {
-        nonCompliantCount += 1
-      }
-    }
-  })
-
-  const rawScore =
-    AUDIT_SCORING.BASE_SCORE +
-    completedMissions * AUDIT_SCORING.CONTROL_AUDITED +
-    nonCompliantCount * AUDIT_SCORING.NON_COMPLIANT_PENALTY
-
-  if (state.auditSession) {
-    state.auditSession.totalScore = Math.max(
-      AUDIT_SCORING.MIN_SCORE,
-      Math.min(AUDIT_SCORING.MAX_SCORE, rawScore)
-    )
-    state.auditSession.completionPercentage =
-      totalMissions > 0 ? Math.round((completedMissions / totalMissions) * 100) : 0
-    if (completedMissions === totalMissions && totalMissions > 0) {
-      state.auditSession.status = 'completed'
-      state.auditSession.endTime = Date.now()
-    }
-  }
-}
+import { updateAuditSessionMetrics } from '../../utils/scoringSystem'
+import { canPerformAction } from '../../utils/authMatrix'
 
 export class InitializeAuditMissionsCommand extends Command<OfficeState> {
   execute() {
@@ -90,7 +60,7 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
 export class StartMissionCommand extends Command<OfficeState> {
   execute({ client, missionId }: { client: any; missionId: string }) {
     const player = client ? this.state.players.get(client.sessionId) : undefined
-    if (!player || player.role !== 'auditor') {
+    if (!player || !canPerformAction(player.role, 'start_mission')) {
       console.error(`Unauthorized mission start by ${client?.sessionId || 'unknown'}`)
       return
     }
@@ -126,7 +96,7 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     justification: string
   }) {
     const player = client ? this.state.players.get(client.sessionId) : undefined
-    if (!player || player.role !== 'auditor') {
+    if (!player || !canPerformAction(player.role, 'complete_mission')) {
       console.error(`Unauthorized mission completion by ${client?.sessionId || 'unknown'}`)
       return
     }
@@ -202,7 +172,12 @@ export class CompleteMissionCommand extends Command<OfficeState> {
 }
 
 export class UpdateMissionStatusCommand extends Command<OfficeState> {
-  execute(client: any, { missionId, status }: { missionId: string; status: 'pending' | 'in-progress' | 'completed' }) {
+  execute({ client, missionId, status }: { client: any; missionId: string; status: 'pending' | 'in-progress' | 'completed' }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || !canPerformAction(player.role, 'start_mission')) {
+      console.error(`Unauthorized mission status update by ${client?.sessionId || 'unknown'}`)
+      return
+    }
     const mission = this.state.missions.get(missionId)
 
     if (!mission) {

@@ -4,8 +4,9 @@ import { ItemType } from '../../../types/Items'
 export default class Item extends Phaser.Physics.Arcade.Sprite {
   private dialogBox!: Phaser.GameObjects.Container
   private statusBox!: Phaser.GameObjects.Container
-  private missionMarker!: Phaser.GameObjects.Text
+  private missionMarker!: Phaser.GameObjects.Image
   id?: string
+  targetObjectId?: string
   itemType!: ItemType
 
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
@@ -17,16 +18,22 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
 
     // add mission marker (initially invisible)
     this.missionMarker = this.scene.add
-      .text(this.x, this.y - this.height * 0.5 - 20, '⭐', {
-        fontSize: '32px',
-        color: '#FFD700',
-        stroke: '#000000',
-        strokeThickness: 6,
-        fontStyle: 'bold',
-      })
+      .image(this.x, this.y - this.height * 0.5 - 20, 'sun_moon')
       .setOrigin(0.5)
       .setDepth(50000)
+      .setScale(0.25)
+      .setInteractive({ useHandCursor: true })
       .setVisible(false)
+
+    // Add a pulsing animation to the marker
+    this.scene.tweens.add({
+      targets: this.missionMarker,
+      scale: 0.35,
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    })
 
     // Add a simple float animation to the marker
     this.scene.tweens.add({
@@ -37,6 +44,11 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
       repeat: -1,
       ease: 'Sine.easeInOut',
     })
+
+    // Click handler for the star
+    this.missionMarker.on('pointerdown', () => {
+      this.scene.events.emit('mission-marker-clicked', this.id || this.targetObjectId)
+    })
   }
 
   setMissionMarker(visible: boolean) {
@@ -44,21 +56,13 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
   }
 
   setMissionStatus(status: 'none' | 'active' | 'completed') {
-    if (status === 'none') {
+    if (status === 'none' || status === 'completed') {
       this.missionMarker.setVisible(false)
       return
     }
 
     this.missionMarker.setVisible(true)
     this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 20)
-
-    if (status === 'active') {
-      this.missionMarker.setText('⭐') // Star for active mission
-      this.missionMarker.setColor('#FFD700') // Gold
-    } else if (status === 'completed') {
-      this.missionMarker.setText('✅') // Checkmark for completed/evidence collected
-      this.missionMarker.setColor('#00FF00') // Green
-    }
   }
 
   // add texts into dialog box container

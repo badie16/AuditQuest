@@ -2,6 +2,8 @@ import { Command } from '@colyseus/command'
 import { OfficeState } from '../schema/OfficeState'
 import { EvidenceSchema, JournalEntrySchema, NotificationSchema } from '../schema/AuditState'
 import { v4 as uuid } from 'uuid'
+import { canPerformAction } from '../../utils/authMatrix'
+import { updateAuditSessionMetrics } from '../../utils/scoringSystem'
 
 export class CollectEvidenceCommand extends Command<OfficeState> {
   execute({
@@ -17,6 +19,12 @@ export class CollectEvidenceCommand extends Command<OfficeState> {
     description: string
     location: string
   }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || !canPerformAction(player.role, 'collect_evidence')) {
+      console.error(`Unauthorized mission evidence collection by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const mission = this.state.missions.get(missionId)
 
     if (!mission) {
@@ -65,6 +73,7 @@ export class CollectEvidenceCommand extends Command<OfficeState> {
     this.state.notifications.push(notification)
 
     console.log(`[Audit] Evidence collected for mission ${missionId}: ${description}`)
+    updateAuditSessionMetrics(this.state)
   }
 }
 
@@ -86,7 +95,7 @@ export class VerifyEvidenceCommand extends Command<OfficeState> {
       return
     }
 
-    if (!player || player.role !== 'auditor') {
+    if (!player || !canPerformAction(player.role, 'verify_evidence')) {
       console.error(`Unauthorized evidence verification by ${client?.sessionId || 'unknown'}`)
       return
     }
@@ -122,6 +131,12 @@ export class VerifyEvidenceCommand extends Command<OfficeState> {
 
 export class RemoveEvidenceCommand extends Command<OfficeState> {
   execute({ client, evidenceId }: { client: any; evidenceId: string }) {
+    const player = client ? this.state.players.get(client.sessionId) : undefined
+    if (!player || !canPerformAction(player.role, 'remove_evidence')) {
+      console.error(`Unauthorized mission evidence removal by ${client?.sessionId || 'unknown'}`)
+      return
+    }
+
     const evidence = this.state.evidence.get(evidenceId)
 
     if (!evidence) {
@@ -132,7 +147,7 @@ export class RemoveEvidenceCommand extends Command<OfficeState> {
     // Remove from mission
     const mission = this.state.missions.get(evidence.missionId)
     if (mission) {
-      mission.collectedEvidence = mission.collectedEvidence.filter((id) => id !== evidenceId)
+      mission.collectedEvidence = mission.collectedEvidence.filter((id: any) => id !== evidenceId)
     }
 
     // Remove evidence
@@ -148,6 +163,7 @@ export class RemoveEvidenceCommand extends Command<OfficeState> {
     journalEntry.type = 'evidence_collected'
 
     this.state.journal.push(journalEntry)
+    updateAuditSessionMetrics(this.state)
   }
 }
 

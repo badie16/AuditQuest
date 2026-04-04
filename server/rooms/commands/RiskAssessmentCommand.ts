@@ -6,6 +6,8 @@ import {
   NotificationSchema,
 } from '../schema/AuditState'
 import { RISK_MATRIX } from '../../../types/AuditTypes'
+import { canPerformAction } from '../../utils/authMatrix'
+import { updateAuditSessionMetrics } from '../../utils/scoringSystem'
 import { v4 as uuid } from 'uuid'
 
 export class CreateRiskAssessmentCommand extends Command<OfficeState> {
@@ -27,7 +29,7 @@ export class CreateRiskAssessmentCommand extends Command<OfficeState> {
     assignedTo?: string
   }) {
     const player = client ? this.state.players.get(client.sessionId) : undefined
-    if (!player || player.role !== 'auditor') {
+    if (!player || !canPerformAction(player.role, 'add_risk')) {
       console.error(`Unauthorized risk assessment by ${client?.sessionId || 'unknown'}`)
       return
     }
@@ -82,18 +84,13 @@ export class CreateRiskAssessmentCommand extends Command<OfficeState> {
     this.state.notifications.push(notification)
 
     console.log(`[Audit] Risk assessment for finding ${findingId}: ${severity}`)
+    updateAuditSessionMetrics(this.state)
   }
 }
 
 export class UpdateRiskAssessmentCommand extends Command<OfficeState> {
-  execute(client: any, {
-    riskId,
-    probability,
-    impact,
-    recommendation,
-    remediationDue,
-    assignedTo,
-  }: {
+  execute({ client, riskId, probability, impact, recommendation, remediationDue, assignedTo }: {
+    client: any
     riskId: string
     probability?: 'low' | 'medium' | 'high'
     impact?: 'low' | 'medium' | 'high'
@@ -102,7 +99,7 @@ export class UpdateRiskAssessmentCommand extends Command<OfficeState> {
     assignedTo?: string
   }) {
     const player = client ? this.state.players.get(client.sessionId) : undefined
-    if (!player || player.role !== 'auditor') {
+    if (!player || !canPerformAction(player.role, 'update_risk')) {
       console.error(`Unauthorized risk update by ${client?.sessionId || 'unknown'}`)
       return
     }
@@ -128,13 +125,25 @@ export class UpdateRiskAssessmentCommand extends Command<OfficeState> {
     if (recommendation) risk.recommendation = recommendation
     if (remediationDue) risk.remediationDue = remediationDue
     if (assignedTo) risk.assignedTo = assignedTo
+    
+    // Add journal entry
+    const journalEntry = new JournalEntrySchema()
+    journalEntry.id = uuid()
+    journalEntry.timestamp = Date.now()
+    journalEntry.auditorId = client.sessionId || 'auditor'
+    journalEntry.action = 'Updated risk assessment'
+    journalEntry.findingId = riskId
+    journalEntry.type = 'risk_assessed'
+    this.state.journal.push(journalEntry)
+
+    updateAuditSessionMetrics(this.state)
   }
 }
 
 export class RemoveRiskAssessmentCommand extends Command<OfficeState> {
-  execute(client: any, { riskId }: { riskId: string }) {
+  execute({ client, riskId }: { client: any; riskId: string }) {
     const player = client ? this.state.players.get(client.sessionId) : undefined
-    if (!player || player.role !== 'auditor') {
+    if (!player || !canPerformAction(player.role, 'update_risk')) {
       console.error(`Unauthorized risk removal by ${client?.sessionId || 'unknown'}`)
       return
     }

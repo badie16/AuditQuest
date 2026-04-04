@@ -1,35 +1,7 @@
 import { AUDIT_SCORING, RISK_MATRIX } from '../../../types/AuditTypes'
 import type { AuditMission, ComplianceFinding, RiskAssessment, Evidence } from '../../../types/AuditTypes'
 
-/**
- * Calculate audit score based on missions completed and findings
- */
-export function calculateAuditScore(params: {
-  completedMissions: number
-  totalMissions: number
-  nonCompliantFindings: number
-  incompleteEvidence: number
-  hasDocumentation: boolean
-}): number {
-  let score = AUDIT_SCORING.BASE_SCORE
-
-  // Add points for each mission audited
-  score += params.completedMissions * AUDIT_SCORING.CONTROL_AUDITED
-
-  // Deduct for non-compliant findings
-  score += params.nonCompliantFindings * AUDIT_SCORING.NON_COMPLIANT_PENALTY
-
-  // Deduct for incomplete evidence
-  score += params.incompleteEvidence * AUDIT_SCORING.INCOMPLETE_EVIDENCE_PENALTY
-
-  // Add bonus for thorough documentation
-  if (params.hasDocumentation) {
-    score += AUDIT_SCORING.THOROUGH_DOCUMENTATION_BONUS
-  }
-
-  // Cap score between min and max
-  return Math.max(AUDIT_SCORING.MIN_SCORE, Math.min(AUDIT_SCORING.MAX_SCORE, score))
-}
+import { DOMAIN_MAPPING } from '../../../types/AuditTypes'
 
 /**
  * Calculate completion percentage
@@ -55,9 +27,9 @@ export function calculateCompletionPercentage(
 export function calculateRiskSeverity(
   probability: 'low' | 'medium' | 'high',
   impact: 'low' | 'medium' | 'high',
-): 'low' | 'medium' | 'high' {
+): 'low' | 'medium' | 'high' | 'critical' {
   const key = `${probability}_${impact}` as keyof typeof RISK_MATRIX
-  return RISK_MATRIX[key] || 'medium'
+  return (RISK_MATRIX[key] as any) || 'medium'
 }
 
 /**
@@ -117,40 +89,112 @@ export function getAuditSummary(params: {
 }
 
 /**
- * Get performance grade based on score
+ * Calculate security auditor 6-step breakdown with granular mission data
+ */
+export function calculateScoreBreakdown(params: {
+  missions: AuditMission[]
+  findings: ComplianceFinding[]
+  risks: RiskAssessment[]
+}) {
+  const domainMissionCounts: Record<string, number> = {}
+  
+  // First pass: count missions per domain
+  params.missions.forEach(m => {
+    const domainKey = m.category || 'default'
+    domainMissionCounts[domainKey] = (domainMissionCounts[domainKey] || 0) + 1
+  })
+
+  const missionResults: any[] = []
+  let weightedTotalScore = 0
+
+  params.missions.forEach((mission) => {
+    // 1. Identify Domain & Weight
+    const domainKey = mission.category || 'default'
+    const domainMapping = DOMAIN_MAPPING[domainKey] || DOMAIN_MAPPING['default']
+    const missionCountInDomain = domainMissionCounts[domainKey]
+    
+    // Mission's share of the total 100 points
+    // If domain weight is 0.4 and there are 2 missions, each is 0.2 of the total score (20 points)
+    const missionWeightPercent = (domainMapping.weight / missionCountInDomain) * 100
+    
+    // 2. Base rating per control
+    let baseRating = 0
+    if (mission.status === 'completed') {
+      baseRating = 10
+      if (mission.compliance === 'non-compliant') baseRating = 0
+      else if (mission.compliance === 'partial') baseRating = 5
+    } else if (mission.status === 'in-progress') {
+      baseRating = 6 // Partial credit for work in progress as seen in user mockup
+    } else {
+      baseRating = 3 // Starting credit for pending as seen in user mockup
+    }
+    
+    // 3. Find Risks for this mission to penalize
+    let riskPenalty = 0
+    const finding = params.findings.find(f => f.missionId === mission.id)
+    if (finding) {
+      params.risks.forEach((risk) => {
+        if (risk.findingId === finding.id) {
+          if (risk.severity === 'critical') riskPenalty += AUDIT_SCORING.PENALTY_CRITICAL_RISK
+          if (risk.severity === 'high') riskPenalty += AUDIT_SCORING.PENALTY_HIGH_RISK
+          if (risk.severity === 'medium') riskPenalty += AUDIT_SCORING.PENALTY_MEDIUM_RISK
+          if (risk.severity === 'low') riskPenalty += AUDIT_SCORING.PENALTY_LOW_RISK
+        }
+      })
+    }
+    
+    // 4. Net score = max(0, base - penalty)
+    const netRating = Math.max(0, baseRating + riskPenalty)
+    const contribution = (netRating / 10) * missionWeightPercent
+    
+    weightedTotalScore += contribution
+    
+    missionResults.push({
+      id: mission.id,
+      name: mission.title,
+      domain: domainMapping.name,
+      status: mission.status,
+      weight: missionWeightPercent,
+      finding: finding ? finding.status : 'compliant',
+      rating: netRating,
+      score: contribution
+    })
+  })
+  
+  return {
+    missionResults,
+    finalScore: Math.round(weightedTotalScore)
+  }
+}
+
+/**
+ * Get performance grade based on score using Security Standards
  */
 export function getPerformanceGrade(score: number): { grade: string; description: string; color: string } {
   if (score >= 90) {
     return {
-      grade: 'A',
-      description: 'Excellent - Strong information security posture',
+      grade: 'Excellent',
+      description: 'Low Risk - Strong information security posture',
       color: '#4CAF50',
-    }
-  }
-  if (score >= 80) {
-    return {
-      grade: 'B',
-      description: 'Good - Adequate security controls in place',
-      color: '#8BC34A',
     }
   }
   if (score >= 70) {
     return {
-      grade: 'C',
-      description: 'Satisfactory - Some security gaps identified',
-      color: '#FFC107',
+      grade: 'Good',
+      description: 'Moderate Risk - Adequate security controls with some gaps',
+      color: '#8BC34A',
     }
   }
-  if (score >= 60) {
+  if (score >= 50) {
     return {
-      grade: 'D',
-      description: 'Poor - Multiple security concerns',
+      grade: 'High Risk',
+      description: 'High Risk - Multiple concerning security gaps identified',
       color: '#FF9800',
     }
   }
   return {
-    grade: 'F',
-    description: 'Critical - Significant security risks',
+    grade: 'Critical Risk',
+    description: 'Critical Risk - Severe organizational vulnerabilities present',
     color: '#F44336',
   }
 }

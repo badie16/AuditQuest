@@ -50,11 +50,14 @@ export default class AuditableObject extends Item {
    */
   private updateAuditStatus() {
     this.clearStatusBox()
+    // Disabled to use mission stars instead of default white dots
+    /*
     if (this.auditCount > 0) {
       this.setStatusBox(`Audited ${this.auditCount}x`)
     } else {
       this.setStatusBox('Ready for audit')
     }
+    */
   }
 
   /**
