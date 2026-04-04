@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button } from '@mui/material'
 import { useAppSelector, useAppDispatch } from '../hooks'
 import { closeDialogue } from '../stores/DialogueStore'
 import phaserGame from '../PhaserGame'
@@ -13,8 +12,8 @@ const DialogueWrapper = styled.div`
   transform: translateX(-50%);
   width: 90%;
   max-width: 700px;
-  background: #2c3e50;
-  border: 4px solid #eee;
+  background: linear-gradient(180deg, #f4e4c2, #ead3a2);
+  border: 4px solid #1b1b1b;
   box-shadow: 8px 8px 0px #000;
   padding: 16px;
   display: flex;
@@ -25,8 +24,14 @@ const DialogueWrapper = styled.div`
   animation: slideUp 0.2s steps(4);
 
   @keyframes slideUp {
-    from { transform: translate(-50%, 100%); opacity: 0; }
-    to { transform: translate(-50%, 0); opacity: 1; }
+    from {
+      transform: translate(-50%, 100%);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
   }
 `
 
@@ -34,13 +39,14 @@ const NameTag = styled.div`
   position: absolute;
   top: -24px;
   left: 12px;
-  background: #3498db;
-  color: white;
+  background: #20304f;
+  color: #fff4d6;
   padding: 4px 12px;
-  border: 4px solid #eee;
+  border: 4px solid #1b1b1b;
   border-bottom: none;
-  font-weight: bold;
-  font-size: 1rem;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
+  line-height: 1.5;
   text-shadow: 2px 2px 0px #000;
 `
 
@@ -48,8 +54,9 @@ const PortraitBox = styled.div`
   flex-shrink: 0;
   width: 100px;
   height: 100px;
-  background: #000;
-  border: 4px solid #eee;
+  background: #fff7e7;
+  border: 4px solid #1b1b1b;
+  box-shadow: 4px 4px 0 #000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -65,14 +72,15 @@ const PortraitBox = styled.div`
 
 const ContentBox = styled.div`
   flex-grow: 1;
-  color: white;
-  font-size: 1.2rem;
+  color: #1b1b1b;
+  font-size: 12px;
   line-height: 1.4;
   display: flex;
   flex-direction: column;
   justify-content: center;
   position: relative;
-  text-shadow: 2px 2px 0px #000;
+  text-shadow: none;
+  padding: 4px 0;
 `
 
 const ActionBox = styled.div`
@@ -82,6 +90,29 @@ const ActionBox = styled.div`
   display: flex;
   gap: 10px;
   z-index: 2001;
+`
+
+const PixelActionButton = styled.button`
+  padding: 10px 12px;
+  border: 3px solid #1b1b1b;
+  box-shadow: 3px 3px 0 #000;
+  background: #42eacb;
+  color: #0f1722;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  &:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #000;
+  }
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #000;
+  }
 `
 
 export default function DialogueDialog() {
@@ -101,11 +132,14 @@ export default function DialogueDialog() {
     const network = game.network
 
     console.log('[Audit] Dialogue collect clicked. NPC ID:', npcId)
-    console.log('[Audit] Active missions in store:', activeMissions.map(m => `ID: ${m.id}, Target: ${m.targetObjectId}`))
+    console.log(
+      '[Audit] Active missions in store:',
+      activeMissions.map((m) => `ID: ${m.id}, Target: ${m.targetObjectId}`)
+    )
 
     // Find if this NPC is a target for any active mission
-    const mission = activeMissions.find(m => m.targetObjectId === npcId)
-    
+    const mission = activeMissions.find((m) => m.targetObjectId === npcId)
+
     if (network) {
       console.log('[Audit] Sending addEvidence for mission:', mission?.id || 'general')
       network.addEvidence(
@@ -119,9 +153,9 @@ export default function DialogueDialog() {
       if (mission) {
         console.log('[Audit] Auto-completing mission:', mission.id)
         network.completeMission(
-            mission.id,
-            'compliant',
-            `Validated via interview with ${title}. Information provided matches requirements.`
+          mission.id,
+          'compliant',
+          `Validated via interview with ${title}. Information provided matches requirements.`
         )
       }
     }
@@ -131,25 +165,15 @@ export default function DialogueDialog() {
   return (
     <DialogueWrapper onClick={handleClose}>
       <NameTag>{title}</NameTag>
-      
+
       <PortraitBox>
         <img src={portrait} alt={title} />
       </PortraitBox>
 
-      <ContentBox>
-        {content}
-      </ContentBox>
+      <ContentBox>{content}</ContentBox>
 
       <ActionBox>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          size="small"
-          onClick={handleCollectEvidence}
-          sx={{ border: '2px solid white', boxShadow: '2px 2px 0 black' }}
-        >
-          Collect as Evidence
-        </Button>
+        <PixelActionButton onClick={handleCollectEvidence}>Collect as Evidence</PixelActionButton>
       </ActionBox>
     </DialogueWrapper>
   )

@@ -33,7 +33,7 @@ export default class Game extends Phaser.Scene {
   private keyF!: Phaser.Input.Keyboard.Key
   private map!: Phaser.Tilemaps.Tilemap
   private frameCounter = 0
-  private roomShadowOverlay!: Phaser.GameObjects.Rectangle
+  private roomShadowOverlay!: Phaser.GameObjects.RenderTexture
   private roomLightHole!: Phaser.GameObjects.Graphics
   myPlayer!: MyPlayer
   private playerSelector!: Phaser.GameObjects.Zone
@@ -434,7 +434,7 @@ export default class Game extends Phaser.Scene {
   private updateRoomLighting() {
     if (!this.myPlayer || !this.roomShadowOverlay) return
 
-    const rt = this.roomShadowOverlay as Phaser.GameObjects.RenderTexture
+    const rt = this.roomShadowOverlay
     const camera = this.cameras.main
 
     const holeSize = 250
@@ -452,18 +452,18 @@ export default class Game extends Phaser.Scene {
       camera.height - radius
     )
 
-    // 🔥 clear previous frame
+    // clear previous frame
     rt.clear()
 
-    // 🔥 draw dark overlay
+    // draw dark overlay
     rt.fill(0x000000, 0.9)
 
-    // 🔥 create hole
+    // create circular transparent hole around the player
     const graphics = this.add.graphics()
     graphics.fillStyle(0xffffff)
     graphics.fillCircle(screenX, screenY, radius)
 
-    // 🔥 ERASE hole
+    // erase the circle from the overlay
     rt.erase(graphics)
 
     graphics.destroy()

@@ -54,18 +54,27 @@ Convention:
 
 # P2 - Story mode et narration
 
-- [ ] Definir une histoire de depart pour l'entreprise (nom, secteur, contexte, problemes, objectifs d'audit).
-- [ ] Ajouter une ecran / dialogue d'introduction au lancement de la partie, avant les missions.
-- [ ] Transformer le briefing de mission en briefing narratif lie a l'histoire de l'entreprise.
-- [ ] Organiser les missions en chapitres de story, pas en liste aleatoire.
-- [ ] Ajouter des dependances de missions basees sur la progression narrative.
-- [ ] Ajouter des dialogues de mission avec contexte, objectif et consequence, pas un simple message unique.
-- [ ] Permettre des interactions de dialogue plus riches avec les PNJ (questions / reponses / choix).
-- [ ] Relier chaque mission a un lieu, un acteur, et un enjeu narratif precis.
-- [ ] Ajouter des etats de story (debut, investigation, escalade, conclusion) pour piloter les dialogues.
-- [ ] Faire evoluer les dialogues des PNJ selon les preuves deja collectees.
-- [ ] Ajouter un texte de mission plus pro avec nom de l'entreprise, departement concerne et raison de l'audit.
-- [ ] Ajouter une vraie progression de campagne avec mission d'ouverture, milieu de parcours et cloture.
+- [x] Ecrire un "story bible" du jeu: nom de l'entreprise, secteur, contexte, objectifs d'audit, risques majeurs et ton narratif.
+- [x] Definir une structure de campagne en chapitres: ouverture, investigation, escalation, conclusion.
+- [x] Ajouter un onboarding narratif au lancement de partie: briefing entreprise + objectif principal + premier enjeu.
+- [ ] Remplacer le briefing de mission generique par un briefing narratif avec contexte, acteur, lieu et consequence.
+- [ ] Faire depend chaque mission d'un chapitre ou d'un etat de story, pas d'une liste statique aleatoire.
+- [ ] Ajouter des templates de mission pro: titre metier, objectif, departement, localisation, preuve attendue, impact si echoue.
+- [ ] Ajouter un systeme de dialogues PNJ a choix multiples (question, reponse, suivi, escalade).
+- [ ] Faire evoluer les dialogues selon l'etat de la story et les preuves deja collectees.
+- [ ] Ajouter un systeme de memoire PNJ simple: ce que le PNJ a deja dit, ce qu'il cache, ce qu'il peut reveler ensuite.
+- [ ] Lier chaque mission a un PNJ ou une zone precise avec justification narrative.
+- [ ] Ajouter des transitions entre chapitres avec message, objectif suivant et resume des preuves trouvees.
+- [ ] Ajouter une fin de campagne avec resultat audit, conclusion narrative et score final.
+
+## Story mode - ordre de livraison recommande
+
+1. Story bible et contexte entreprise.
+2. Onboarding narratif au lancement.
+3. Briefing de mission enrichi.
+4. Dialogues PNJ a choix multiples.
+5. Chapitres de story et progression.
+6. Fin de campagne et conclusion.
 
 ---
 

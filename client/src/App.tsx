@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import Tooltip from '@mui/material/Tooltip'
@@ -9,7 +9,8 @@ import { BackgroundMode } from '../../types/BackgroundMode'
 import { useAppSelector } from './hooks'
 
 import RoomSelectionDialog from './components/RoomSelectionDialog'
-import LoginDialog from './components/LoginDialog'
+import LoginSetupDialog from './components/LoginSetupDialog'
+import PreAuditBriefingDialog from './components/PreAuditBriefingDialog'
 import ComputerDialog from './components/ComputerDialog'
 import WhiteboardDialog from './components/WhiteboardDialog'
 import VideoConnectionDialog from './components/VideoConnectionDialog'
@@ -41,15 +42,15 @@ const HudButton = styled.button<{ $isDay: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${props => props.$isDay ? '#3498db' : '#426dea'};
+  background-color: ${(props) => (props.$isDay ? '#3498db' : '#426dea')};
   color: white;
-  border: 4px solid ${props => props.$isDay ? '#2c3e50' : '#eee'};
+  border: 4px solid ${(props) => (props.$isDay ? '#2c3e50' : '#eee')};
   box-shadow: 4px 4px 0px #000;
   cursor: pointer;
   transition: all 0.1s ease;
 
   &:hover {
-    background-color: ${props => props.$isDay ? '#2980b9' : '#3557c0'};
+    background-color: ${(props) => (props.$isDay ? '#2980b9' : '#3557c0')};
     transform: translate(1px, 1px);
     box-shadow: 3px 3px 0px #000;
   }
@@ -67,6 +68,7 @@ const HudButton = styled.button<{ $isDay: boolean }>`
 function App() {
   const dispatch = useAppDispatch()
   const [hudOpen, setHudOpen] = useState(false) // Etat pour HUD
+  const [showPreAuditBriefing, setShowPreAuditBriefing] = useState(false)
 
   const loggedIn = useAppSelector((state) => state.user.loggedIn)
   const backgroundMode = useAppSelector((state) => state.user.backgroundMode)
@@ -80,9 +82,25 @@ function App() {
   const videoConnected = useAppSelector((state) => state.user.videoConnected)
   const roomJoined = useAppSelector((state) => state.room.roomJoined)
 
+  useEffect(() => {
+    if (loggedIn) {
+      setShowPreAuditBriefing(true)
+    } else {
+      setShowPreAuditBriefing(false)
+      setHudOpen(false)
+    }
+  }, [loggedIn])
+
   let ui: JSX.Element
   if (loggedIn) {
-    if (computerDialogOpen) {
+    if (showPreAuditBriefing) {
+      ui = (
+        <PreAuditBriefingDialog
+          open={showPreAuditBriefing}
+          onContinue={() => setShowPreAuditBriefing(false)}
+        />
+      )
+    } else if (computerDialogOpen) {
       ui = <ComputerDialog />
     } else if (whiteboardDialogOpen) {
       ui = <WhiteboardDialog />
@@ -105,18 +123,18 @@ function App() {
       )
     }
   } else if (roomJoined) {
-    ui = <LoginDialog />
+    ui = <LoginSetupDialog />
   } else {
     ui = <RoomSelectionDialog />
   }
 
   return (
     <Backdrop>
-      {loggedIn && <NotificationToast />}
+      {loggedIn && !showPreAuditBriefing && <NotificationToast />}
       {ui}
 
       {/* Bouton pour ouvrir/fermer l'AuditHUD */}
-      {loggedIn && (
+      {loggedIn && !showPreAuditBriefing && (
         <Tooltip title={hudOpen ? 'Close Audit HUD' : 'Open Audit HUD'} placement="right">
           <HudButton $isDay={isDay} onClick={() => setHudOpen((prev) => !prev)}>
             {hudOpen ? <CloseIcon /> : <FactCheckIcon />}
@@ -125,10 +143,14 @@ function App() {
       )}
 
       {/* AuditHUD rendu seulement si hudOpen */}
-      {loggedIn && hudOpen && <AuditHUD isOpen={hudOpen} onClose={() => setHudOpen(false)} />}
+      {loggedIn && !showPreAuditBriefing && hudOpen && (
+        <AuditHUD isOpen={hudOpen} onClose={() => setHudOpen(false)} />
+      )}
 
       {/* Helper buttons si pas de dialogs */}
-      {!computerDialogOpen && !whiteboardDialogOpen && <HelperButtonGroup />}
+      {loggedIn && !showPreAuditBriefing && !computerDialogOpen && !whiteboardDialogOpen && (
+        <HelperButtonGroup />
+      )}
     </Backdrop>
   )
 }
