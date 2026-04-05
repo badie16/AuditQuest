@@ -25,22 +25,22 @@ export default function RiskTab() {
       {/* Summary Stats */}
       <div className="stats-grid">
         <div className="stat-card pixel-card high-risk">
-          <div className="stat-label">High Risk</div>
+          <div className="stat-label">High Severity</div>
           <div className="stat-value fail">{highRiskCount}</div>
         </div>
         <div className="stat-card pixel-card medium-risk">
-          <div className="stat-label">Medium Risk</div>
+          <div className="stat-label">Medium Severity</div>
           <div className="stat-value partial">{mediumRiskCount}</div>
         </div>
         <div className="stat-card pixel-card low-risk">
-          <div className="stat-label">Low Risk</div>
+          <div className="stat-label">Low Severity</div>
           <div className="stat-value pass">{lowRiskCount}</div>
         </div>
       </div>
 
       {risks.length > 0 && (
         <div className="summary-card pixel-card mt-24">
-          <h3 className="card-title">Risk Analysis</h3>
+          <h3 className="card-title">Risk Overview</h3>
           <div className="risk-progress-container">
             <div className="risk-progress-item">
               <div className="risk-progress-label">
@@ -74,12 +74,12 @@ export default function RiskTab() {
       )}
 
       <div className="tab-header mt-24">
-        <h2 className="tab-title">Risk Assessments ({risks.length})</h2>
+        <h2 className="tab-title">Risk Register ({risks.length})</h2>
       </div>
 
       {risks.length === 0 ? (
         <div className="empty-panel-state">
-          No risk assessments recorded yet. Assess risks for non-compliant findings.
+          No risks have been recorded yet. Assess non-compliant findings to generate one.
         </div>
       ) : (
         <div className="risks-list">
@@ -165,7 +165,7 @@ function RiskCard({ risk, isExpanded, onToggle }: RiskCardProps) {
       {isExpanded && (
         <div className="risk-card-content">
           <div className="risk-section">
-            <div className="risk-label">Remediation Recommendation</div>
+            <div className="risk-label">Recommended Action</div>
             <div className="risk-text briefing-card">{risk.recommendation}</div>
           </div>
 

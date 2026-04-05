@@ -32,11 +32,11 @@ export default function FindingsTab() {
       {/* Summary Stats */}
       <div className="stats-grid">
         <div className="stat-card pixel-card">
-          <div className="stat-label">Compliant</div>
+          <div className="stat-label">Compliant Findings</div>
           <div className="stat-value compliant">{compliantCount}</div>
         </div>
         <div className="stat-card pixel-card">
-          <div className="stat-label">Partial</div>
+          <div className="stat-label">Partially Compliant</div>
           <div className="stat-value partial">{partialCount}</div>
         </div>
         <div className="stat-card pixel-card">
@@ -46,12 +46,12 @@ export default function FindingsTab() {
       </div>
 
       <div className="tab-header mt-24">
-        <h2 className="tab-title">Detailed Findings ({findings.length})</h2>
+        <h2 className="tab-title">Finding Details ({findings.length})</h2>
       </div>
 
       {findings.length === 0 ? (
         <div className="empty-panel-state">
-          No findings recorded yet. Complete compliance evaluations to record findings.
+          No findings have been recorded yet. Complete a compliance review to create one.
         </div>
       ) : (
         <div className="findings-list">
@@ -66,7 +66,7 @@ export default function FindingsTab() {
                     </span>
                   </div>
                   <div className="finding-mission">
-                    Mission: {getMissionName(finding.missionId)}
+                    Mission Target: {getMissionName(finding.missionId)}
                   </div>
                 </div>
                 <div className="finding-expand">
@@ -82,13 +82,13 @@ export default function FindingsTab() {
               {expandedId === finding.id && (
                 <div className="finding-card-content">
                   <div className="finding-section">
-                    <div className="finding-label">Justification</div>
+                    <div className="finding-label">Audit Justification</div>
                     <div className="finding-text briefing-card">{finding.justification}</div>
                   </div>
 
                   {finding.notes && (
                     <div className="finding-section">
-                      <div className="finding-label">Notes</div>
+                      <div className="finding-label">Analyst Notes</div>
                       <div className="finding-text">{finding.notes}</div>
                     </div>
                   )}
@@ -121,16 +121,16 @@ export default function FindingsTab() {
 
       {findings.length > 0 && (
         <div className="summary-card pixel-card mt-24">
-          <h3 className="card-title">Compliance Metrics</h3>
+          <h3 className="card-title">Compliance Snapshot</h3>
           <div className="summary-grid">
             <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
-              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>RATE</span>
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>COMPLIANCE RATE</span>
               <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
                 {Math.round((compliantCount / findings.length) * 100)}%
               </span>
             </div>
             <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
-              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>EVALUATED</span>
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>REVIEWED CONTROLS</span>
               <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
                 {findings.length} Controls
               </span>

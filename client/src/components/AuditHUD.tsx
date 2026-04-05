@@ -123,7 +123,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
             <div className="audit-overview">
               {/* Score Hero Section */}
               <div className="score-hero">
-                <div className="score-label">Security Posture Assessment</div>
+                <div className="score-label">Security Posture Overview</div>
                 <div className="score-value">{auditState.auditScore || 0}</div>
                 <div className="pixel-progress-bar large">
                   <div
@@ -143,7 +143,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                   <div className="stat-num">{summary.totalMissions || 0}</div>
                 </div>
                 <div className="stat-box">
-                  <div className="stat-header">Done</div>
+                  <div className="stat-header">Completed</div>
                   <div className="stat-num">{summary.completedMissions || 0}</div>
                 </div>
                 <div className="stat-box">
@@ -151,7 +151,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                   <div className="stat-num">{summary.compliantCount || 0}</div>
                 </div>
                 <div className="stat-box">
-                  <div className="stat-header">Risks</div>
+                  <div className="stat-header">High Risks</div>
                   <div className="stat-num">{summary.highRiskCount || 0}</div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
 
               {/* Calculation Logic Box */}
               <div className="calculation-logic">
-                <h4>Calculation Methodology</h4>
+                <h4>Scoring Methodology</h4>
                 <ol>
                   <li>
                     <strong>Strategic Mapping:</strong> Each control is weighted by mission
@@ -249,7 +249,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                             colSpan={6}
                             style={{ textAlign: 'center', opacity: 0.5, padding: '40px' }}
                           >
-                            Initialize missions to begin assessment...
+                            Initialize missions to begin the assessment...
                           </td>
                         </tr>
                       ) : (

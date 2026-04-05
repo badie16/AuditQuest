@@ -61,9 +61,21 @@ export default class MyPlayer extends Player {
     if (!cursors) return
 
     const item = playerSelector.selectedItem
+    const activeMissions = store.getState().audit.activeMissions || []
+
+    const getMissionForItem = () =>
+      activeMissions.find(
+        (mission) => mission.targetObjectId === ((item as any)?.id || (item as any)?.targetObjectId)
+      )
+
+    const missionIsInteractable = () => {
+      const mission = getMissionForItem()
+      return !!mission && mission.status === 'in-progress'
+    }
 
     if (Phaser.Input.Keyboard.JustDown(keyF)) {
       if (item?.itemType === ItemType.NPC) {
+        if (!missionIsInteractable()) return
         const npc = item as NPC
         npc.talk()
         return
@@ -74,14 +86,11 @@ export default class MyPlayer extends Player {
       // Check if the selected item exists and has an ID or targetObjectId
       const itemId = (item as any)?.id || (item as any)?.targetObjectId
       if (itemId) {
-        const activeMissions = store.getState().audit.activeMissions
         console.log('[Audit] Checking missions for itemId:', itemId)
         console.log('[Audit] Active missions:', activeMissions.map(m => `${m.id}: target=${m.targetObjectId}, status=${m.status}`))
         
         const mission = activeMissions.find(
-          (m) =>
-            m.targetObjectId === itemId &&
-            (m.status === 'pending' || m.status === 'in-progress')
+          (m) => m.targetObjectId === itemId && m.status === 'in-progress'
         )
 
         if (mission) {
@@ -98,10 +107,12 @@ export default class MyPlayer extends Player {
 
       switch (item?.itemType) {
         case ItemType.COMPUTER:
+          if (!missionIsInteractable()) return
           const computer = item as Computer
           computer.openDialog(this.playerId, network)
           break
         case ItemType.WHITEBOARD:
+          if (!missionIsInteractable()) return
           const whiteboard = item as Whiteboard
           whiteboard.openDialog(network)
           break

@@ -18,10 +18,11 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
 
     // add simple mission marker (initially invisible)
     this.missionMarker = this.scene.add
-      .text(this.x, this.y - this.height * 0.5 - 16, '•', {
+      .text(this.x, this.y - this.height * 0.5 - 16, '!', {
         fontFamily: 'Arial',
-        fontSize: '26px',
-        color: '#ffffff',
+        fontSize: '28px',
+        color: '#ff3b30',
+        fontStyle: 'bold',
       })
       .setOrigin(0.5)
       .setDepth(50000)

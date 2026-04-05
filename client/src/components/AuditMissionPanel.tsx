@@ -154,7 +154,7 @@ export default function AuditMissionPanel() {
           <div className="panel-title-row">
             <h2 className="panel-title">Missions Progress</h2>
             <span className="panel-stats">
-              {completedMissions.length} / {allMissions.length} DONE
+              {completedMissions.length} / {allMissions.length} COMPLETED
             </span>
           </div>
           <div className="pixel-progress-bar large">
@@ -174,7 +174,7 @@ export default function AuditMissionPanel() {
 
           {completedMissions.length > 0 && (
             <div className="mission-group">
-              <h3 className="group-title completed-title">Completed</h3>
+              <h3 className="group-title completed-title">Completed Missions</h3>
               {completedMissions.map((mission) => (
                 <MissionItem key={mission.id} mission={mission} />
               ))}
@@ -183,7 +183,7 @@ export default function AuditMissionPanel() {
 
           {allMissions.length === 0 && (
             <div className="empty-panel-state">
-              No missions available. Start an audit session to begin.
+              No missions are available yet. Start an audit session to begin.
             </div>
           )}
         </div>

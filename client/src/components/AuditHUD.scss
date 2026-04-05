@@ -2,7 +2,7 @@
   AUDITQUEST RETRO DASHBOARD
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
 
 .audit-hud {
   position: fixed;
@@ -763,10 +763,147 @@
 /* MISSION BRIEFING OVERLAY (Alternative usage) */
 .mission-briefing-overlay {
   .mission-briefing-container {
-    max-width: 800px;
+    max-width: 860px;
     border: 4px solid var(--ink);
     box-shadow: 8px 8px 0px var(--ink);
-    background: var(--bg-main);
+    background:
+      radial-gradient(circle at top left, rgba(66, 234, 203, 0.12), transparent 35%),
+      linear-gradient(180deg, var(--bg-main), var(--panel-deep-bg));
+  }
+
+  .mission-briefing-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--text-main);
+  }
+
+  .briefing-section,
+  .briefing-card,
+  .briefing-tips-card,
+  .briefing-stat {
+    background: linear-gradient(180deg, var(--bg-card), rgba(255, 255, 255, 0.02));
+    border: 3px solid var(--border-main);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.7);
+    padding: 16px;
+  }
+
+  .briefing-section {
+    background: linear-gradient(180deg, rgba(66, 234, 203, 0.08), rgba(255, 255, 255, 0.02));
+  }
+
+  .briefing-control-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 8px 10px;
+    border: 3px solid var(--ink);
+    background: var(--danger);
+    color: #fff;
+    box-shadow: 3px 3px 0px var(--ink);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .briefing-label {
+    font-family: 'Share Tech Mono', monospace !important;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    color: var(--text-accent);
+    margin-bottom: 8px;
+  }
+
+  .briefing-title {
+    margin: 8px 0 0;
+    font-size: clamp(18px, 2.4vw, 28px);
+    line-height: 1.5;
+    color: var(--text-main);
+    text-shadow: 2px 2px 0px var(--ink);
+  }
+
+  .briefing-card,
+  .briefing-tips-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .briefing-text,
+  .briefing-value,
+  .evidence-requirement-item {
+    font-family: 'Share Tech Mono', monospace !important;
+    letter-spacing: 0.01em;
+  }
+
+  .briefing-text {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-main);
+
+    &.small {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+  }
+
+  .briefing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .briefing-stat {
+    min-height: 100%;
+  }
+
+  .briefing-value {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--text-main);
+
+    &.priority-low {
+      color: var(--success);
+    }
+    &.priority-medium {
+      color: var(--warning);
+    }
+    &.priority-high {
+      color: var(--danger);
+    }
+  }
+
+  .evidence-requirements-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .evidence-requirement-item {
+    padding: 10px 12px;
+    background: var(--panel-deep-bg);
+    border: 2px solid var(--border-main);
+    color: var(--text-main);
+    box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.03);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .briefing-actions {
+    padding: 16px 24px 24px;
+    gap: 12px;
+    display: flex;
+    justify-content: flex-end;
+
+    .pixel-btn {
+      min-width: 180px;
+    }
   }
 }
 .pixel-chip {
