@@ -69,7 +69,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
       <div className="audit-hud__container">
         <div className="audit-hud__header">
           <h1 className="audit-hud__title">Audit Dashboard</h1>
-          <span className="pixel-chip" style={{ marginRight: '10px' }}>
+          <span className="pixel-chip">
             Role: {auditRole}
           </span>
           <button className="audit-hud__close" onClick={onClose}>
@@ -123,12 +123,11 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
               <div className="score-hero">
                 <div className="score-label">Security Posture Assessment</div>
                 <div className="score-value">{auditState.auditScore || 0}</div>
-                <div className="score-bar-container">
+                <div className="pixel-progress-bar large">
                   <div 
-                    className="score-bar-fill" 
+                    className="pixel-progress-fill" 
                     style={{ 
-                      width: `${auditState.auditScore || 0}%`,
-                      background: 'var(--accent-cyan)' 
+                      width: `${auditState.auditScore || 0}%`
                     }} 
                   />
                 </div>
@@ -157,7 +156,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                 </div>
                 <div className="stat-box">
                   <div className="stat-header">Risks</div>
-                  <div className="stat-num" style={{ color: 'var(--danger)' }}>
+                  <div className="stat-num">
                     {summary.highRiskCount || 0}
                   </div>
                 </div>
@@ -250,7 +249,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
 
               {/* Risk Level Scale footer */}
               <div className="scale-section">
-                <div className="section-header" style={{ fontSize: '10px', marginBottom: '8px' }}>Organization Risk Benchmark</div>
+                <div className="section-header">Organization Risk Benchmark</div>
                 <div className="risk-scale">
                   <div className="scale-box excellent">
                     <div>90 - 100</div>

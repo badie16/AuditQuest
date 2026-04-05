@@ -17,7 +17,7 @@ export default function EvidenceTab() {
 
   return (
     <div className="audit-tab-content">
-      <div className="tab-header">
+      <div className="tab-header mt-24">
         <h2 className="tab-title">Collected Evidence ({evidence.length})</h2>
       </div>
 
@@ -89,17 +89,18 @@ export default function EvidenceTab() {
         <div className="summary-card pixel-card mt-24">
           <h3 className="card-title">Evidence Summary</h3>
           <div className="summary-grid">
-            {Object.entries(
-              evidence.reduce((acc: Record<string, number>, item: any) => {
-                acc[item.type] = (acc[item.type] || 0) + 1
-                return acc
-              }, {})
-            ).map(([type, count]) => (
-              <div key={type} className="summary-item">
-                <span className={`pixel-chip evidence-${type}`}>{type}</span>
-                <span className="summary-count">{count}</span>
-              </div>
-            ))}
+            <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>TOTAL</span>
+              <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
+                {evidence.length} Items
+              </span>
+            </div>
+            <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>VERIFIED</span>
+              <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
+                {evidence.filter((e: any) => e.verified).length} / {evidence.length}
+              </span>
+            </div>
           </div>
         </div>
       )}

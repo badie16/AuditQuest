@@ -74,7 +74,7 @@ export default function EvidenceCollectionDialog({
         <div className="audit-hud__header mission-header">
           <div className="header-status">
             <span className="blink-dot"></span>
-            SCANNING TARGET: {objectName.toUpperCase()}
+            Scanning Target: {objectName}
           </div>
           <button className="audit-hud__close" onClick={onClose}>✕</button>
         </div>
@@ -192,8 +192,8 @@ export default function EvidenceCollectionDialog({
         </div>
 
         <div className="dialog-actions mission-actions">
-          <button className="pixel-btn secondary" onClick={onClose}>ABORT</button>
-          <button className="pixel-btn primary" onClick={handleCollectEvidence}>COLLECT DATA</button>
+          <button className="pixel-btn secondary" onClick={onClose}>Abort</button>
+          <button className="pixel-btn primary" onClick={handleCollectEvidence}>Collect Data</button>
         </div>
       </div>
     </div>

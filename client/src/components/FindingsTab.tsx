@@ -16,7 +16,7 @@ export default function FindingsTab() {
 
   const getMissionName = (missionId: string) => {
     const mission = missions.find((m: any) => m.id === missionId)
-    return mission?.name || 'Unknown Mission'
+    return mission?.title || 'Unknown Mission'
   }
 
   const handleToggleExpand = (id: string) => {
@@ -122,16 +122,18 @@ export default function FindingsTab() {
       {findings.length > 0 && (
         <div className="summary-card pixel-card mt-24">
           <h3 className="card-title">Compliance Metrics</h3>
-          <div className="metrics-grid">
-            <div className="metric-item">
-              <span className="metric-label">Rate</span>
-              <span className="metric-value">
+          <div className="summary-grid">
+            <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>RATE</span>
+              <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
                 {Math.round((compliantCount / findings.length) * 100)}%
               </span>
             </div>
-            <div className="metric-item">
-              <span className="metric-label">Evaluated</span>
-              <span className="metric-value">{findings.length} Controls</span>
+            <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>EVALUATED</span>
+              <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
+                {findings.length} Controls
+              </span>
             </div>
           </div>
         </div>
