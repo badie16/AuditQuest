@@ -56,7 +56,10 @@ export default function FindingsTab() {
       ) : (
         <div className="findings-list">
           {findings.map((finding: any) => (
-            <div key={finding.id} className={`finding-card pixel-card ${finding.status} ${expandedId === finding.id ? 'expanded' : ''}`}>
+            <div
+              key={finding.id}
+              className={`finding-card pixel-card ${finding.status} ${expandedId === finding.id ? 'expanded' : ''}`}
+            >
               <div className="finding-card-header" onClick={() => handleToggleExpand(finding.id)}>
                 <div className="finding-info">
                   <div className="finding-meta">
@@ -95,7 +98,9 @@ export default function FindingsTab() {
 
                   {finding.evidence && finding.evidence.length > 0 && (
                     <div className="finding-section">
-                      <div className="finding-label">Linked Evidence ({finding.evidence.length})</div>
+                      <div className="finding-label">
+                        Linked Evidence ({finding.evidence.length})
+                      </div>
                       <div className="evidence-chips">
                         {finding.evidence.map((evidenceId: string) => (
                           <span key={evidenceId} className="pixel-chip small">
@@ -108,9 +113,7 @@ export default function FindingsTab() {
 
                   <div className="finding-footer">
                     <div className="auditor-id">By: {finding.auditorId}</div>
-                    <div className="timestamp">
-                      {new Date(finding.createdAt).toLocaleString()}
-                    </div>
+                    <div className="timestamp">{new Date(finding.createdAt).toLocaleString()}</div>
                   </div>
                 </div>
               )}
@@ -123,15 +126,31 @@ export default function FindingsTab() {
         <div className="summary-card pixel-card mt-24">
           <h3 className="card-title">Compliance Snapshot</h3>
           <div className="summary-grid">
-            <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
-              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>COMPLIANCE RATE</span>
-              <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
+            <div
+              className="summary-item"
+              style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}
+            >
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>
+                COMPLIANCE RATE
+              </span>
+              <span
+                className="summary-count"
+                style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}
+              >
                 {Math.round((compliantCount / findings.length) * 100)}%
               </span>
             </div>
-            <div className="summary-item" style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}>
-              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>REVIEWED CONTROLS</span>
-              <span className="summary-count" style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}>
+            <div
+              className="summary-item"
+              style={{ background: '#232d3d', padding: '24px', border: '3px solid #000' }}
+            >
+              <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>
+                REVIEWED CONTROLS
+              </span>
+              <span
+                className="summary-count"
+                style={{ fontSize: '24px', display: 'block', color: 'var(--text-accent)' }}
+              >
                 {findings.length} Controls
               </span>
             </div>

@@ -87,8 +87,11 @@ export default class MyPlayer extends Player {
       const itemId = (item as any)?.id || (item as any)?.targetObjectId
       if (itemId) {
         console.log('[Audit] Checking missions for itemId:', itemId)
-        console.log('[Audit] Active missions:', activeMissions.map(m => `${m.id}: target=${m.targetObjectId}, status=${m.status}`))
-        
+        console.log(
+          '[Audit] Active missions:',
+          activeMissions.map((m) => `${m.id}: target=${m.targetObjectId}, status=${m.status}`)
+        )
+
         const mission = activeMissions.find(
           (m) => m.targetObjectId === itemId && m.status === 'in-progress'
         )

@@ -48,7 +48,10 @@ export default function RiskTab() {
                 <span>{Math.round((highRiskCount / risks.length) * 100)}%</span>
               </div>
               <div className="pixel-progress-bar">
-                <div className="pixel-progress-fill high" style={{ width: `${(highRiskCount / risks.length) * 100}%` }} />
+                <div
+                  className="pixel-progress-fill high"
+                  style={{ width: `${(highRiskCount / risks.length) * 100}%` }}
+                />
               </div>
             </div>
             <div className="risk-progress-item">
@@ -57,7 +60,10 @@ export default function RiskTab() {
                 <span>{Math.round((mediumRiskCount / risks.length) * 100)}%</span>
               </div>
               <div className="pixel-progress-bar">
-                <div className="pixel-progress-fill medium" style={{ width: `${(mediumRiskCount / risks.length) * 100}%` }} />
+                <div
+                  className="pixel-progress-fill medium"
+                  style={{ width: `${(mediumRiskCount / risks.length) * 100}%` }}
+                />
               </div>
             </div>
             <div className="risk-progress-item">
@@ -66,7 +72,10 @@ export default function RiskTab() {
                 <span>{Math.round((lowRiskCount / risks.length) * 100)}%</span>
               </div>
               <div className="pixel-progress-bar">
-                <div className="pixel-progress-fill low" style={{ width: `${(lowRiskCount / risks.length) * 100}%` }} />
+                <div
+                  className="pixel-progress-fill low"
+                  style={{ width: `${(lowRiskCount / risks.length) * 100}%` }}
+                />
               </div>
             </div>
           </div>
@@ -140,9 +149,7 @@ function RiskCard({ risk, isExpanded, onToggle }: RiskCardProps) {
           {risk.severity === 'high' && <WarningIcon className="warning-icon" />}
           <div className="risk-meta">
             <span className="risk-id">RISK-{risk.id.substring(0, 4)}</span>
-            <span className={`pixel-chip risk-${risk.severity}`}>
-              {risk.severity}
-            </span>
+            <span className={`pixel-chip risk-${risk.severity}`}>{risk.severity}</span>
             <span className={`pixel-chip urgency ${daysUntilDue < 7 ? 'danger' : ''}`}>
               {daysUntilDue > 0 ? `${daysUntilDue} DAYS REMAINING` : 'OVERDUE'}
             </span>
@@ -176,9 +183,7 @@ function RiskCard({ risk, isExpanded, onToggle }: RiskCardProps) {
             </div>
             <div className="risk-stat-box">
               <div className="risk-label">Due Date</div>
-              <div className="risk-value">
-                {new Date(risk.remediationDue).toLocaleDateString()}
-              </div>
+              <div className="risk-value">{new Date(risk.remediationDue).toLocaleDateString()}</div>
             </div>
           </div>
         </div>
