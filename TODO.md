@@ -43,12 +43,12 @@ Convention:
 
 # P2 - UX et fonctionnalites audit
 
-- [ ] Ajouter les boutons export (HTML/CSV) dans l'onglet Overview.
-- [ ] Ajouter un ecran final de rapport (lecture + telechargement).
+- [x] Ajouter les boutons export (HTML/CSV) dans l'onglet Overview.
+- [x] Ajouter un ecran final de rapport (lecture + telechargement).
 - [x] Ajouter un Room Indicator dans le HUD.
 - [x] Ajouter un systeme de visibilite par salle avec ombres sur les zones non actives.
-- [~] Ajouter interviews NPC a choix multiples pour debloquer certaines preuves.
-- [ ] Ajouter visualisation de pseudo-documents (preuve type document).
+- [x] Ajouter interviews NPC a choix multiples pour debloquer certaines preuves.
+- [x] Ajouter visualisation de pseudo-documents (preuve type document).
 
 ---
 
@@ -107,4 +107,4 @@ Convention:
 
 ---
 
-Derniere mise a jour: 05 Avril 2026
+Derniere mise a jour: 06 Avril 2026

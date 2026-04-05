@@ -7,6 +7,7 @@ import Game from '../scenes/Game'
 export default function EvidenceTab() {
   const evidence = useSelector((state: RootState) => state.audit.collectedEvidence) || []
   const auditRole = useSelector((state: RootState) => state.user.auditRole)
+  const documentEvidence = evidence.filter((item: any) => item.type === 'document')
 
   const handleVerifyEvidence = (evidenceId: string, verified: boolean) => {
     const game = phaserGame.scene.keys.game as Game
@@ -118,6 +119,54 @@ export default function EvidenceTab() {
                 {evidence.filter((e: any) => e.verified).length} / {evidence.length}
               </span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {documentEvidence.length > 0 && (
+        <div className="summary-card pixel-card mt-24">
+          <h3 className="card-title">Document Previews</h3>
+          <div className="summary-grid">
+            {documentEvidence.map((item: any) => (
+              <div
+                key={item.id}
+                style={{
+                  background: '#f4e4c2',
+                  color: '#1b1b1b',
+                  border: '4px solid #1b1b1b',
+                  boxShadow: '4px 4px 0 #000',
+                  padding: '14px',
+                  display: 'grid',
+                  gap: '8px',
+                }}
+              >
+                <div className="pixel-chip" style={{ margin: 0, width: 'fit-content' }}>
+                  DOCUMENT
+                </div>
+                <div style={{ fontSize: '14px', lineHeight: 1.6, fontWeight: 700 }}>
+                  {item.description}
+                </div>
+                <div style={{ fontSize: '11px', lineHeight: 1.6, opacity: 0.85 }}>
+                  Source: {item.location}
+                </div>
+                <div
+                  style={{
+                    background: '#fff8ea',
+                    border: '3px solid #1b1b1b',
+                    padding: '10px',
+                    fontFamily: 'Courier New, monospace',
+                    fontSize: '11px',
+                    lineHeight: 1.8,
+                    display: 'grid',
+                    gap: '4px',
+                  }}
+                >
+                  <div>• Classification: Audit evidence</div>
+                  <div>• Review status: {item.verified ? 'Confirmed' : 'Pending review'}</div>
+                  <div>• Logged at: {new Date(item.collectionTime).toLocaleString()}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

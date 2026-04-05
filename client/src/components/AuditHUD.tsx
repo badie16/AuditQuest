@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../stores'
 import {
@@ -14,6 +14,13 @@ import EvidenceTab from './EvidenceTab'
 import FindingsTab from './FindingsTab'
 import RiskTab from './RiskTab'
 import AuditMissionPanel from './AuditMissionPanel'
+import FinalReportDialog from './FinalReportDialog'
+import {
+  generateAuditReport,
+  exportReportAsCSV,
+  exportReportAsHTML,
+  downloadFile,
+} from '../utils/reportGenerator'
 import './AuditHUD.scss'
 
 interface AuditHUDProps {
@@ -26,6 +33,8 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
   const [activeTab, setActiveTab] = useState<
     'overview' | 'missions' | 'evidence' | 'findings' | 'risks' | 'journal'
   >('overview')
+  const [showFinalReport, setShowFinalReport] = useState(false)
+  const [autoOpenedReport, setAutoOpenedReport] = useState(false)
 
   const auditState = useSelector((state: RootState) => state.audit)
   const backgroundMode = useSelector((state: RootState) => state.user.backgroundMode)
@@ -40,6 +49,16 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
   const auditJournal = auditState.auditJournal || []
   const riskAssessments = auditState.riskAssessments || []
   const collectedEvidence = auditState.collectedEvidence || []
+
+  const report = generateAuditReport({
+    sessionId: auditState.sessionId || 'audit-session',
+    missions: [...activeMissions, ...completedMissions],
+    findings,
+    risks: riskAssessments,
+    journal: auditJournal,
+    totalScore: auditState.auditScore || 0,
+    auditorId: mySessionId || 'auditor',
+  })
 
   const summary = getAuditSummary({
     missions: [...activeMissions, ...completedMissions],
@@ -57,6 +76,16 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
 
   const grade = getPerformanceGrade(auditState.auditScore || 0)
 
+  useEffect(() => {
+    if (auditState.status === 'completed' && !autoOpenedReport) {
+      setShowFinalReport(true)
+      setAutoOpenedReport(true)
+    }
+    if (auditState.status !== 'completed') {
+      setAutoOpenedReport(false)
+    }
+  }, [auditState.status, autoOpenedReport])
+
   if (!isOpen) return null
 
   const themeClass = backgroundMode === BackgroundMode.DAY ? 'theme-day' : 'theme-night'
@@ -66,6 +95,22 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
     const network = game?.network
     if (!network) return
     network.changePlayerRole(playerId, role)
+  }
+
+  const handleDownloadCSV = () => {
+    downloadFile(
+      `${report.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}.csv`,
+      exportReportAsCSV(report),
+      'text/csv'
+    )
+  }
+
+  const handleDownloadHTML = () => {
+    downloadFile(
+      `${report.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}.html`,
+      exportReportAsHTML(report),
+      'text/html'
+    )
   }
 
   return (
@@ -202,6 +247,21 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                     </div>
                   </div>
                 )}
+              </div>
+
+              <div className="summary-card pixel-card mt-24">
+                <h3 className="card-title">Report Actions</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '12px' }}>
+                  <button className="pixel-btn primary" onClick={handleDownloadCSV}>
+                    Export CSV
+                  </button>
+                  <button className="pixel-btn secondary" onClick={handleDownloadHTML}>
+                    Export HTML
+                  </button>
+                  <button className="pixel-btn primary" onClick={() => setShowFinalReport(true)}>
+                    Open Final Report
+                  </button>
+                </div>
               </div>
 
               {/* Calculation Logic Box */}
@@ -433,6 +493,17 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
           )}
         </div>
       </div>
+
+      <FinalReportDialog
+        open={showFinalReport}
+        report={report}
+        campaignResult={auditState.campaignResult}
+        campaignConclusion={auditState.campaignConclusion}
+        currentChapterTitle={auditState.currentChapterTitle}
+        onClose={() => setShowFinalReport(false)}
+        onDownloadCSV={handleDownloadCSV}
+        onDownloadHTML={handleDownloadHTML}
+      />
     </div>
   )
 }
