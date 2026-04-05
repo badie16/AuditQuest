@@ -4,7 +4,7 @@ import { ItemType } from '../../../types/Items'
 export default class Item extends Phaser.Physics.Arcade.Sprite {
   private dialogBox!: Phaser.GameObjects.Container
   private statusBox!: Phaser.GameObjects.Container
-  private missionMarker!: Phaser.GameObjects.Image
+  private missionMarker!: Phaser.GameObjects.Text
   id?: string
   targetObjectId?: string
   itemType!: ItemType
@@ -16,39 +16,16 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
     this.dialogBox = this.scene.add.container().setDepth(10000)
     this.statusBox = this.scene.add.container().setDepth(10000)
 
-    // add mission marker (initially invisible)
+    // add simple mission marker (initially invisible)
     this.missionMarker = this.scene.add
-      .image(this.x, this.y - this.height * 0.5 - 20, 'sun_moon')
+      .text(this.x, this.y - this.height * 0.5 - 16, '•', {
+        fontFamily: 'Arial',
+        fontSize: '26px',
+        color: '#ffffff',
+      })
       .setOrigin(0.5)
       .setDepth(50000)
-      .setScale(0.25)
-      .setInteractive({ useHandCursor: true })
       .setVisible(false)
-
-    // Add a pulsing animation to the marker
-    this.scene.tweens.add({
-      targets: this.missionMarker,
-      scale: 0.35,
-      duration: 1000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    })
-
-    // Add a simple float animation to the marker
-    this.scene.tweens.add({
-      targets: this.missionMarker,
-      y: '-=10',
-      duration: 800,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    })
-
-    // Click handler for the star
-    this.missionMarker.on('pointerdown', () => {
-      this.scene.events.emit('mission-marker-clicked', this.id || this.targetObjectId)
-    })
   }
 
   setMissionMarker(visible: boolean) {
@@ -62,7 +39,7 @@ export default class Item extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.missionMarker.setVisible(true)
-    this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 20)
+    this.missionMarker.setPosition(this.x, this.y - this.height * 0.5 - 16)
   }
 
   // add texts into dialog box container

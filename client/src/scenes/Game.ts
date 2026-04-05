@@ -22,7 +22,6 @@ import { ItemType } from '../../../types/Items'
 import store from '../stores'
 import { setFocused, setShowChat } from '../stores/ChatStore'
 import { setCurrentRoom } from '../stores/UserStore'
-import { openEvidenceDialog } from '../stores/AuditStore'
 import { NavKeys, Keyboard } from '../../../types/KeyboardState'
 import { NPCS_DATA } from '../../../types/AuditData'
 
@@ -232,34 +231,10 @@ export default class Game extends Phaser.Scene {
     this.network.onItemUserRemoved(this.handleItemUserRemoved, this)
     this.network.onChatMessageAdded(this.handleChatMessageAdded, this)
 
-    // Handle mission star clicks
-    this.events.on('mission-marker-clicked', this.handleMissionMarkerClicked, this)
-
     // Initial sync
     this.syncMissions()
     this.updateRoomIndicator()
     this.updateRoomLighting()
-  }
-
-  private handleMissionMarkerClicked(targetId: string) {
-    if (!targetId) return
-
-    const activeMissions = store.getState().audit.activeMissions
-    const mission = activeMissions.find(
-      (m) =>
-        m.targetObjectId === targetId &&
-        (m.status === 'pending' || m.status === 'in-progress')
-    )
-
-    if (mission) {
-      console.log('[Audit] Mission marker clicked. Opening dialog for:', mission.title)
-      store.dispatch(
-        openEvidenceDialog({
-          targetName: mission.title,
-          targetId: targetId,
-        })
-      )
-    }
   }
 
   private handleItemSelectorOverlap(playerSelector, selectionItem) {
@@ -375,7 +350,6 @@ export default class Game extends Phaser.Scene {
 
   private syncMissions() {
     const activeMissions = store.getState().audit.activeMissions
-    console.log('[Audit] syncMissions called. Active missions:', activeMissions.length)
 
     // Reset all markers first
     this.itemMap.forEach((item) => item.setMissionStatus('none'))
@@ -384,15 +358,10 @@ export default class Game extends Phaser.Scene {
     this.whiteboardMap.forEach((item) => item.setMissionStatus('none'))
     this.vendingMachineMap.forEach((item) => item.setMissionStatus('none'))
 
-    // Set markers for objects that have active missions
+    // Show markers for missions that are currently in progress.
     activeMissions.forEach((mission) => {
-      console.log(
-        `[Audit] Checking mission ${mission.id} status: ${mission.status} target: ${mission.targetObjectId}`
-      )
-      // Show markers for all non-completed missions (to perform as tasks)
-      if (mission.status !== 'completed') {
+      if (mission.status === 'in-progress') {
         if (mission.targetObjectId) {
-          // Check all maps for the target object
           const item =
             this.itemMap.get(mission.targetObjectId) ||
             this.npcMap.get(mission.targetObjectId) ||
@@ -400,17 +369,8 @@ export default class Game extends Phaser.Scene {
             this.whiteboardMap.get(mission.targetObjectId) ||
             this.vendingMachineMap.get(mission.targetObjectId)
 
-          const hasEvidence = mission.evidenceCollected > 0
-
           if (item) {
-            console.log(
-              `[Audit] SUCCESS: Found item for target ${mission.targetObjectId}. Setting status.`
-            )
-            item.setMissionStatus(hasEvidence ? 'completed' : 'active')
-          } else {
-            console.warn(
-              `[Audit] WARNING: Target item ${mission.targetObjectId} not found in any map!`
-            )
+            item.setMissionStatus('active')
           }
         }
       }
