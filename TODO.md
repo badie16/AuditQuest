@@ -45,9 +45,9 @@ Convention:
 
 - [ ] Ajouter les boutons export (HTML/CSV) dans l'onglet Overview.
 - [ ] Ajouter un ecran final de rapport (lecture + telechargement).
-- [ ] Ajouter un Room Indicator dans le HUD.
+- [x] Ajouter un Room Indicator dans le HUD.
 - [x] Ajouter un systeme de visibilite par salle avec ombres sur les zones non actives.
-- [ ] Ajouter interviews NPC a choix multiples pour debloquer certaines preuves.
+- [~] Ajouter interviews NPC a choix multiples pour debloquer certaines preuves.
 - [ ] Ajouter visualisation de pseudo-documents (preuve type document).
 
 ---
@@ -57,15 +57,15 @@ Convention:
 - [x] Ecrire un "story bible" du jeu: nom de l'entreprise, secteur, contexte, objectifs d'audit, risques majeurs et ton narratif.
 - [x] Definir une structure de campagne en chapitres: ouverture, investigation, escalation, conclusion.
 - [x] Ajouter un onboarding narratif au lancement de partie: briefing entreprise + objectif principal + premier enjeu.
-- [ ] Remplacer le briefing de mission generique par un briefing narratif avec contexte, acteur, lieu et consequence.
-- [ ] Faire depend chaque mission d'un chapitre ou d'un etat de story, pas d'une liste statique aleatoire.
-- [ ] Ajouter des templates de mission pro: titre metier, objectif, departement, localisation, preuve attendue, impact si echoue.
-- [ ] Ajouter un systeme de dialogues PNJ a choix multiples (question, reponse, suivi, escalade).
-- [ ] Faire evoluer les dialogues selon l'etat de la story et les preuves deja collectees.
+- [x] Remplacer le briefing de mission generique par un briefing narratif avec contexte, acteur, lieu et consequence.
+- [x] Faire depend chaque mission d'un chapitre ou d'un etat de story, pas d'une liste statique aleatoire.
+- [~] Ajouter des templates de mission pro: titre metier, objectif, departement, localisation, preuve attendue, impact si echoue.
+- [~] Ajouter un systeme de dialogues PNJ a choix multiples (question, reponse, suivi, escalade).
+- [~] Faire evoluer les dialogues selon l'etat de la story et les preuves deja collectees.
 - [ ] Ajouter un systeme de memoire PNJ simple: ce que le PNJ a deja dit, ce qu'il cache, ce qu'il peut reveler ensuite.
-- [ ] Lier chaque mission a un PNJ ou une zone precise avec justification narrative.
-- [ ] Ajouter des transitions entre chapitres avec message, objectif suivant et resume des preuves trouvees.
-- [ ] Ajouter une fin de campagne avec resultat audit, conclusion narrative et score final.
+- [x] Lier chaque mission a un PNJ ou une zone precise avec justification narrative.
+- [x] Ajouter des transitions entre chapitres avec message, objectif suivant et resume des preuves trouvees.
+- [x] Ajouter une fin de campagne avec resultat audit, conclusion narrative et score final.
 
 ## Story mode - ordre de livraison recommande
 
@@ -102,9 +102,9 @@ Convention:
 
 # Meta suivi
 
-- [ ] Reevaluer ce TODO apres correction P0.
+- [x] Reevaluer ce TODO apres correction P0.
 - [ ] Mettre a jour pourcentage d'avancement sur base des taches verifiees, pas seulement des intentions.
 
 ---
 
-Derniere mise a jour: 02 Avril 2026
+Derniere mise a jour: 05 Avril 2026

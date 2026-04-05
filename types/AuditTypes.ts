@@ -26,6 +26,10 @@ export interface AuditMission {
   targetRoom?: string
   compliance?: ComplianceStatus
   justification?: string
+  chapterId?: string
+  storyContext?: string
+  actor?: string
+  consequence?: string
 }
 
 export interface Evidence {
@@ -77,6 +81,11 @@ export interface AuditSession {
   completionPercentage: number
   auditors: string[]
   status: AuditStatus
+  currentChapterId?: string
+  currentChapterTitle?: string
+  currentChapterOrder?: number
+  campaignResult?: 'pass' | 'warning' | 'fail'
+  campaignConclusion?: string
 }
 
 export interface JournalEntry {
@@ -90,6 +99,8 @@ export interface JournalEntry {
   type:
     | 'mission_started'
     | 'mission_completed'
+    | 'chapter_transition'
+    | 'campaign_completed'
     | 'evidence_collected'
     | 'compliance_evaluated'
     | 'risk_assessed'
@@ -148,6 +159,11 @@ export interface AuditState {
   complianceDialogOpen: boolean
   selectedMissionId: string
   activeTab?: 'overview' | 'missions' | 'findings' | 'risks' | 'journal'
+  currentChapterId: string
+  currentChapterTitle: string
+  currentChapterOrder: number
+  campaignResult: 'pass' | 'warning' | 'fail'
+  campaignConclusion: string
 }
 
 // ISO 27002 Controls Reference
@@ -251,13 +267,13 @@ export const EVIDENCE_TEMPLATES = {
 }
 
 // Scoring Constants (6-Step Methodology)
-export const DOMAIN_MAPPING: Record<string, {name: string, weight: number}> = {
-  'server_room': { name: 'Network & Data Security', weight: 0.4 },
-  'workstation': { name: 'Endpoint Security', weight: 0.3 },
-  'ceo_office': { name: 'Management & Access', weight: 0.15 },
-  'reception': { name: 'Physical Security', weight: 0.15 },
-  'office': { name: 'Organizational Security', weight: 0.15 },
-  'default': { name: 'General Security', weight: 0.2 }
+export const DOMAIN_MAPPING: Record<string, { name: string; weight: number }> = {
+  server_room: { name: 'Network & Data Security', weight: 0.4 },
+  workstation: { name: 'Endpoint Security', weight: 0.3 },
+  ceo_office: { name: 'Management & Access', weight: 0.15 },
+  reception: { name: 'Physical Security', weight: 0.15 },
+  office: { name: 'Organizational Security', weight: 0.15 },
+  default: { name: 'General Security', weight: 0.2 },
 }
 
 export const AUDIT_SCORING = {

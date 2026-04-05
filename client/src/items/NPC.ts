@@ -10,7 +10,12 @@ export default class NPC extends AuditableObject {
   dialogueText: string
   npcTexture: string
   portrait: string
-  targetObjectId?: string
+  dialogueOptions: Array<{
+    id: string
+    question: string
+    answer: string
+    unlockChapterOrder?: number
+  }> = []
 
   constructor(
     scene: Phaser.Scene,
@@ -28,10 +33,10 @@ export default class NPC extends AuditableObject {
     this.npcName = npcName
     this.dialogueText = dialogueText
     this.npcTexture = texture
-    
+
     // Use provided portrait or fallback to a default if missing
     this.portrait = portrait || 'assets/images/login/Adam_login.png'
-    
+
     // Play idle animation by default
     this.anims.play(`${this.npcTexture}_idle_down`, true)
   }
@@ -44,12 +49,12 @@ export default class NPC extends AuditableObject {
     const shift = sittingShiftData[chair.itemDirection]
     this.setPosition(chair.x + shift[0], chair.y + shift[1])
     this.setDepth(chair.depth + shift[2])
-    
+
     // Crucial for static bodies: update the physics body position
     if (this.body instanceof Phaser.Physics.Arcade.StaticBody) {
       this.refreshBody()
     }
-    
+
     // Play the sitting animation for this specific character
     this.anims.play(`${this.npcTexture}_sit_${chair.itemDirection}`, true)
   }
@@ -65,6 +70,7 @@ export default class NPC extends AuditableObject {
         content: this.dialogueText,
         npcId: this.targetObjectId || this.npcName.toLowerCase().replace(/\s/g, '_'),
         portrait: this.portrait,
+        options: this.dialogueOptions,
       })
     )
   }

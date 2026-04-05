@@ -24,6 +24,10 @@ export class MissionSchema extends Schema implements AuditMission {
   @type('string') priority: 'low' | 'medium' | 'high' = 'medium'
   @type('string') targetObjectId = ''
   @type('string') targetRoom = ''
+  @type('string') chapterId = ''
+  @type('string') storyContext = ''
+  @type('string') actor = ''
+  @type('string') consequence = ''
   @type('number') createdAt = 0
   @type('number') completedAt?: number
 }
@@ -77,6 +81,8 @@ export class JournalEntrySchema extends Schema implements JournalEntry {
   @type('string') type:
     | 'mission_started'
     | 'mission_completed'
+    | 'chapter_transition'
+    | 'campaign_completed'
     | 'evidence_collected'
     | 'compliance_evaluated'
     | 'risk_assessed'
@@ -105,4 +111,9 @@ export class AuditSessionSchema extends Schema implements AuditSession {
   @type('number') completionPercentage = 0
   @type(['string']) auditors = new ArraySchema<string>()
   @type('string') status: 'pending' | 'in-progress' | 'completed' = 'pending'
+  @type('string') currentChapterId = ''
+  @type('string') currentChapterTitle = ''
+  @type('number') currentChapterOrder = 0
+  @type('string') campaignResult: 'pass' | 'warning' | 'fail' = 'warning'
+  @type('string') campaignConclusion = ''
 }

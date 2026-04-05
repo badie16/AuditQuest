@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../stores'
-import { getPerformanceGrade, getAuditSummary, calculateScoreBreakdown } from '../utils/scoringSystem'
+import {
+  getPerformanceGrade,
+  getAuditSummary,
+  calculateScoreBreakdown,
+} from '../utils/scoringSystem'
 import { BackgroundMode } from '../../../types/BackgroundMode'
 import { AuditRole } from '../../../types/AuditTypes'
 import phaserGame from '../PhaserGame'
@@ -19,9 +23,9 @@ interface AuditHUDProps {
 }
 
 export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSelected }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'missions' | 'evidence' | 'findings' | 'risks' | 'journal'>(
-    'overview'
-  )
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'missions' | 'evidence' | 'findings' | 'risks' | 'journal'
+  >('overview')
 
   const auditState = useSelector((state: RootState) => state.audit)
   const backgroundMode = useSelector((state: RootState) => state.user.backgroundMode)
@@ -69,9 +73,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
       <div className="audit-hud__container">
         <div className="audit-hud__header">
           <h1 className="audit-hud__title">Audit Dashboard</h1>
-          <span className="pixel-chip">
-            Role: {auditRole}
-          </span>
+          <span className="pixel-chip">Role: {auditRole}</span>
           <button className="audit-hud__close" onClick={onClose}>
             ✕
           </button>
@@ -124,16 +126,14 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                 <div className="score-label">Security Posture Assessment</div>
                 <div className="score-value">{auditState.auditScore || 0}</div>
                 <div className="pixel-progress-bar large">
-                  <div 
-                    className="pixel-progress-fill" 
-                    style={{ 
-                      width: `${auditState.auditScore || 0}%`
-                    }} 
+                  <div
+                    className="pixel-progress-fill"
+                    style={{
+                      width: `${auditState.auditScore || 0}%`,
+                    }}
                   />
                 </div>
-                <div className="score-status-badge">
-                  {grade.grade.toUpperCase()}
-                </div>
+                <div className="score-status-badge">{grade.grade.toUpperCase()}</div>
               </div>
 
               {/* Stats Grid */}
@@ -144,22 +144,64 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                 </div>
                 <div className="stat-box">
                   <div className="stat-header">Done</div>
-                  <div className="stat-num">
-                    {summary.completedMissions || 0}
-                  </div>
+                  <div className="stat-num">{summary.completedMissions || 0}</div>
                 </div>
                 <div className="stat-box">
                   <div className="stat-header">Compliant</div>
-                  <div className="stat-num">
-                    {summary.compliantCount || 0}
-                  </div>
+                  <div className="stat-num">{summary.compliantCount || 0}</div>
                 </div>
                 <div className="stat-box">
                   <div className="stat-header">Risks</div>
-                  <div className="stat-num">
-                    {summary.highRiskCount || 0}
+                  <div className="stat-num">{summary.highRiskCount || 0}</div>
+                </div>
+              </div>
+
+              <div className="summary-card pixel-card mt-24">
+                <h3 className="card-title">Story Progression</h3>
+                <div className="summary-grid">
+                  <div
+                    className="summary-item"
+                    style={{ background: '#232d3d', padding: '16px', border: '3px solid #000' }}
+                  >
+                    <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>
+                      CURRENT CHAPTER
+                    </span>
+                    <span
+                      className="summary-count"
+                      style={{ fontSize: '14px', display: 'block', color: 'var(--text-accent)' }}
+                    >
+                      {auditState.currentChapterOrder > 0
+                        ? `Chapter ${auditState.currentChapterOrder}: ${auditState.currentChapterTitle || 'Unknown'}`
+                        : 'Initializing story...'}
+                    </span>
+                  </div>
+                  <div
+                    className="summary-item"
+                    style={{ background: '#232d3d', padding: '16px', border: '3px solid #000' }}
+                  >
+                    <span className="pixel-label" style={{ display: 'block', marginBottom: '8px' }}>
+                      CAMPAIGN STATUS
+                    </span>
+                    <span
+                      className="summary-count"
+                      style={{ fontSize: '14px', display: 'block', color: 'var(--text-accent)' }}
+                    >
+                      {auditState.status === 'completed'
+                        ? `Completed (${auditState.campaignResult || 'warning'})`
+                        : 'In progress'}
+                    </span>
                   </div>
                 </div>
+                {auditState.campaignConclusion && (
+                  <div style={{ marginTop: '12px' }}>
+                    <span className="pixel-label" style={{ display: 'block', marginBottom: '6px' }}>
+                      CAMPAIGN CONCLUSION
+                    </span>
+                    <div style={{ fontSize: '12px', lineHeight: 1.6, opacity: 0.95 }}>
+                      {auditState.campaignConclusion}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Calculation Logic Box */}
@@ -167,16 +209,20 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                 <h4>Calculation Methodology</h4>
                 <ol>
                   <li>
-                    <strong>Strategic Mapping:</strong> Each control is weighted by mission importance.
+                    <strong>Strategic Mapping:</strong> Each control is weighted by mission
+                    importance.
                   </li>
                   <li>
-                    <strong>Baseline Rating:</strong> Status weights (<em>Completed: 10</em> / <em>In-Progress: 6</em> / <em>Pending: 3</em>).
+                    <strong>Baseline Rating:</strong> Status weights (<em>Completed: 10</em> /{' '}
+                    <em>In-Progress: 6</em> / <em>Pending: 3</em>).
                   </li>
                   <li>
-                    <strong>Risk Impact:</strong> Severity penalties (<em>Critical: -4</em> / <em>High: -3</em> / <em>Medium: -2</em> / <em>Low: -1</em>).
+                    <strong>Risk Impact:</strong> Severity penalties (<em>Critical: -4</em> /{' '}
+                    <em>High: -3</em> / <em>Medium: -2</em> / <em>Low: -1</em>).
                   </li>
                   <li>
-                    <strong>Net Compliance:</strong> Final score = (Base - Penalty) × Weight ➔ Normalized to 100.
+                    <strong>Net Compliance:</strong> Final score = (Base - Penalty) × Weight ➔
+                    Normalized to 100.
                   </li>
                 </ol>
               </div>
@@ -199,7 +245,10 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                     <tbody>
                       {breakdown.missionResults.length === 0 ? (
                         <tr>
-                          <td colSpan={6} style={{ textAlign: 'center', opacity: 0.5, padding: '40px' }}>
+                          <td
+                            colSpan={6}
+                            style={{ textAlign: 'center', opacity: 0.5, padding: '40px' }}
+                          >
                             Initialize missions to begin assessment...
                           </td>
                         </tr>
@@ -207,40 +256,44 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                         breakdown.missionResults.map((m: any) => (
                           <tr key={m.id}>
                             <td>
-                              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{m.name}</div>
-                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>{m.domain}</div>
+                              <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                                {m.name}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: '10px',
+                                  color: 'var(--text-muted)',
+                                  marginTop: '2px',
+                                }}
+                              >
+                                {m.domain}
+                              </div>
                             </td>
                             <td className="td-status">
-                              <span className={`status-badge ${m.status}`}>
-                                {m.status}
-                              </span>
+                              <span className={`status-badge ${m.status}`}>{m.status}</span>
                             </td>
-                            <td style={{ textAlign: 'center' }}>
-                              {m.weight.toFixed(1)}%
-                            </td>
+                            <td style={{ textAlign: 'center' }}>{m.weight.toFixed(1)}%</td>
                             <td className="td-finding">
-                              <span className={`status-badge ${m.finding}`}>
-                                {m.finding}
-                              </span>
+                              <span className={`status-badge ${m.finding}`}>{m.finding}</span>
                             </td>
                             <td style={{ textAlign: 'center' }}>
-                              <span style={{ fontWeight: 700, color: m.rating < 5 ? 'var(--danger)' : 'var(--success)' }}>
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  color: m.rating < 5 ? 'var(--danger)' : 'var(--success)',
+                                }}
+                              >
                                 {m.rating}
-                              </span>/10
+                              </span>
+                              /10
                             </td>
-                            <td className="td-score">
-                              {m.score.toFixed(1)}
-                            </td>
+                            <td className="td-score">{m.score.toFixed(1)}</td>
                           </tr>
                         ))
                       )}
                       <tr className="total-row">
-                        <td colSpan={5}>
-                          Weighted total posture score 
-                        </td>
-                        <td className="final-score-val">
-                          {breakdown.finalScore}
-                        </td>
+                        <td colSpan={5}>Weighted total posture score</td>
+                        <td className="final-score-val">{breakdown.finalScore}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -276,8 +329,16 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
 
               {/* Role management remained for auditors */}
               {auditRole === 'auditor' && (
-                <div style={{ marginTop: '32px', borderTop: '1px solid var(--border-main)', paddingTop: '24px' }}>
-                  <div className="section-header" style={{ marginBottom: '16px' }}>Personnel & Role Directory</div>
+                <div
+                  style={{
+                    marginTop: '32px',
+                    borderTop: '1px solid var(--border-main)',
+                    paddingTop: '24px',
+                  }}
+                >
+                  <div className="section-header" style={{ marginBottom: '16px' }}>
+                    Personnel & Role Directory
+                  </div>
                   <div className="pro-table-wrapper">
                     <table className="pro-table">
                       <thead>
@@ -291,16 +352,26 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                         {playerDirectory.map((player) => (
                           <tr key={player.id}>
                             <td>
-                              <div style={{ fontWeight: 600 }}>{player.name || 'Anonymous User'}</div>
+                              <div style={{ fontWeight: 600 }}>
+                                {player.name || 'Anonymous User'}
+                              </div>
                             </td>
                             <td>
-                              <span className="status-badge" style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
+                              <span
+                                className="status-badge"
+                                style={{
+                                  backgroundColor: 'rgba(255,255,255,0.05)',
+                                  color: 'var(--text-muted)',
+                                }}
+                              >
                                 {player.role.toUpperCase()}
                               </span>
                             </td>
                             <td style={{ textAlign: 'right' }}>
                               {player.id === mySessionId ? (
-                                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>SYSTEM ACCESS GRANTED</span>
+                                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                                  SYSTEM ACCESS GRANTED
+                                </span>
                               ) : (
                                 <select
                                   style={{
@@ -309,7 +380,7 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
                                     border: '1px solid var(--border-main)',
                                     borderRadius: '4px',
                                     fontSize: '11px',
-                                    padding: '4px 8px'
+                                    padding: '4px 8px',
                                   }}
                                   value={player.role}
                                   onChange={(e) =>

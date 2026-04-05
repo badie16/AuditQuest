@@ -94,6 +94,12 @@ export interface NPCData {
   dialogue: string
   role: string
   room?: string
+  dialogueOptions?: Array<{
+    id: string
+    question: string
+    answer: string
+    unlockChapterOrder?: number
+  }>
 }
 
 export const AUDIT_MISSIONS: NarrativeMission[] = [
@@ -299,6 +305,22 @@ export const NPCS_DATA: NPCData[] = [
     dialogue:
       'Welcome to the audit. I assure you we follow all ISO 27001 guidelines strictly here.',
     room: 'Director Office',
+    dialogueOptions: [
+      {
+        id: 'dir_policy_signoff',
+        question: 'Who approved the latest security policy version?',
+        answer:
+          'I approved version 2.0 last quarter and mandated distribution to all department leads.',
+        unlockChapterOrder: 1,
+      },
+      {
+        id: 'dir_legal_registry',
+        question: 'How do you track legal and compliance obligations?',
+        answer:
+          'We maintain a legal registry in the director safe and review it before each compliance cycle.',
+        unlockChapterOrder: 4,
+      },
+    ],
   },
   {
     id: 'npc_manager',
@@ -309,6 +331,22 @@ export const NPCS_DATA: NPCData[] = [
     dialogue:
       'I have all the logs and organizational charts ready for your review in the meeting room.',
     room: 'Meeting Room',
+    dialogueOptions: [
+      {
+        id: 'mgr_roles_matrix',
+        question: 'How are security responsibilities assigned across teams?',
+        answer:
+          'Each team lead owns control execution, and we track ownership through a responsibility matrix.',
+        unlockChapterOrder: 1,
+      },
+      {
+        id: 'mgr_incident_followup',
+        question: 'What happens after a security incident is reported?',
+        answer:
+          'The incident ticket triggers manager review, corrective action, and a lessons-learned update.',
+        unlockChapterOrder: 2,
+      },
+    ],
   },
   {
     id: 'npc_it_admin',
@@ -319,6 +357,21 @@ export const NPCS_DATA: NPCData[] = [
     dialogue:
       'The servers are segregated and all backups are encrypted. You can verify the configs on PC 4.',
     room: 'General Office',
+    dialogueOptions: [
+      {
+        id: 'it_segmentation',
+        question: 'Can you explain the network segmentation model?',
+        answer:
+          'Critical systems are isolated by VLAN and firewall ACLs; admin access is restricted to approved stations.',
+        unlockChapterOrder: 3,
+      },
+      {
+        id: 'it_backup_controls',
+        question: 'How do you validate backup integrity?',
+        answer: 'We run weekly restore tests and keep signed validation logs for audit evidence.',
+        unlockChapterOrder: 3,
+      },
+    ],
   },
   {
     id: 'npc_hr',
@@ -329,6 +382,21 @@ export const NPCS_DATA: NPCData[] = [
     dialogue:
       'All employees have signed their non-disclosure agreements and completed the awareness training.',
     room: 'Break Room',
+    dialogueOptions: [
+      {
+        id: 'hr_awareness',
+        question: 'How do you ensure awareness training is completed on time?',
+        answer: 'HR tracks completion monthly and escalates overdue staff to department managers.',
+        unlockChapterOrder: 2,
+      },
+      {
+        id: 'hr_social_engineering',
+        question: 'What social engineering scenarios are covered in training?',
+        answer:
+          'We train phishing recognition, pretext calls, and suspicious badge access in practical workshops.',
+        unlockChapterOrder: 2,
+      },
+    ],
   },
 ]
 

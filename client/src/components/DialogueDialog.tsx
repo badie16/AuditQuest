@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from '../hooks'
 import { closeDialogue } from '../stores/DialogueStore'
 import phaserGame from '../PhaserGame'
 import Game from '../scenes/Game'
+import { STORY_CHAPTERS } from '../../../types/AuditData'
 
 const DialogueWrapper = styled.div`
   position: fixed;
@@ -115,16 +116,55 @@ const PixelActionButton = styled.button`
   }
 `
 
+const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+`
+
+const OptionButton = styled.button<{ $active: boolean }>`
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 3px solid #1b1b1b;
+  box-shadow: 3px 3px 0 #000;
+  background: ${(props) => (props.$active ? '#42eacb' : '#fff7e7')};
+  color: #0f1722;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 7px;
+  line-height: 1.7;
+  cursor: pointer;
+
+  &:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 #000;
+  }
+`
+
 export default function DialogueDialog() {
   const dispatch = useAppDispatch()
-  const { isOpen, title, content, portrait, npcId } = useAppSelector((state) => state.dialogue)
+  const { isOpen, title, content, portrait, npcId, options } = useAppSelector(
+    (state) => state.dialogue
+  )
   const activeMissions = useAppSelector((state) => state.audit.activeMissions)
+  const currentChapterOrder = useAppSelector((state) => state.audit.currentChapterOrder)
+  const [selectedOptionId, setSelectedOptionId] = React.useState<string>('')
 
   if (!isOpen) return null
 
   const handleClose = () => {
+    setSelectedOptionId('')
     dispatch(closeDialogue())
   }
+
+  const availableOptions = (options || []).filter((option) => {
+    if (!option.unlockChapterOrder) return true
+    return currentChapterOrder >= option.unlockChapterOrder
+  })
+
+  const selectedOption = availableOptions.find((option) => option.id === selectedOptionId)
+  const displayedContent = selectedOption?.answer || content
 
   const handleCollectEvidence = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -145,7 +185,7 @@ export default function DialogueDialog() {
       network.addEvidence(
         mission?.id || 'general',
         'interview',
-        `Interview with ${title}: "${content}"`,
+        `Interview with ${title}: "${displayedContent}"`,
         'Office'
       )
 
@@ -159,6 +199,7 @@ export default function DialogueDialog() {
         )
       }
     }
+    setSelectedOptionId('')
     dispatch(closeDialogue())
   }
 
@@ -170,7 +211,25 @@ export default function DialogueDialog() {
         <img src={portrait} alt={title} />
       </PortraitBox>
 
-      <ContentBox>{content}</ContentBox>
+      <ContentBox>
+        {displayedContent}
+        {availableOptions.length > 0 && (
+          <OptionList>
+            {availableOptions.map((option) => (
+              <OptionButton
+                key={option.id}
+                $active={selectedOptionId === option.id}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedOptionId(option.id)
+                }}
+              >
+                {option.question}
+              </OptionButton>
+            ))}
+          </OptionList>
+        )}
+      </ContentBox>
 
       <ActionBox>
         <PixelActionButton onClick={handleCollectEvidence}>Collect as Evidence</PixelActionButton>

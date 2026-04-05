@@ -184,6 +184,7 @@ export default class Game extends Phaser.Scene {
         npc.dialogueText = data.dialogue
         npc.portrait = data.portrait // Set property
         npc.targetObjectId = data.id // Set targetObjectId for evidence linking
+        npc.dialogueOptions = data.dialogueOptions || []
 
         // Re-initialize using constructor-like logic if needed, or simply ensure properties are set.
         // Since Phaser group.get() reuses objects, we must manually set properties if the constructor isn't called again.
@@ -422,7 +423,7 @@ export default class Game extends Phaser.Scene {
     const rt = this.roomShadowOverlay
     const camera = this.cameras.main
 
-    const holeSize = 250
+    const holeSize = 280
     const radius = holeSize / 2
 
     const screenX = Phaser.Math.Clamp(

@@ -1,7 +1,12 @@
 import { Command } from '@colyseus/command'
 import { OfficeState } from '../schema/OfficeState'
-import { MissionSchema, JournalEntrySchema, ComplianceFindingSchema } from '../schema/AuditState'
-import { AUDIT_MISSIONS } from '../../../types/AuditData'
+import {
+  MissionSchema,
+  JournalEntrySchema,
+  ComplianceFindingSchema,
+  NotificationSchema,
+} from '../schema/AuditState'
+import { AUDIT_MISSIONS, STORY_CHAPTERS } from '../../../types/AuditData'
 import { AUDIT_SCORING } from '../../../types/AuditTypes'
 import { v4 as uuid } from 'uuid'
 
@@ -10,6 +15,15 @@ import { canPerformAction } from '../../utils/authMatrix'
 
 export class InitializeAuditMissionsCommand extends Command<OfficeState> {
   execute() {
+    const chapterOrderMap = new Map(STORY_CHAPTERS.map((chapter) => [chapter.id, chapter.order]))
+    const firstChapter = [...STORY_CHAPTERS].sort((a, b) => a.order - b.order)[0]
+
+    if (this.state.auditSession && firstChapter) {
+      this.state.auditSession.currentChapterId = firstChapter.id
+      this.state.auditSession.currentChapterTitle = firstChapter.title
+      this.state.auditSession.currentChapterOrder = firstChapter.order
+    }
+
     // Initialize audit missions from shared AUDIT_MISSIONS data
     AUDIT_MISSIONS.forEach((data) => {
       const mission = new MissionSchema()
@@ -18,26 +32,33 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
       mission.description = data.description || ''
       mission.isoControl = data.controlId || ''
       mission.zone = data.category || 'office'
-      
-      // Story logic: missions with no prerequisites are in-progress, others are pending
-      if (data.prerequisites && data.prerequisites.length > 0) {
+
+      const chapterOrder = chapterOrderMap.get(data.chapterId) || Number.MAX_SAFE_INTEGER
+      const isFirstChapterMission = !!firstChapter && chapterOrder === firstChapter.order
+
+      // Story-first logic: only first chapter can start; next chapters remain locked.
+      if (!isFirstChapterMission || (data.prerequisites && data.prerequisites.length > 0)) {
         mission.status = 'pending'
       } else {
         mission.status = 'in-progress'
       }
-      
+
       mission.priority = data.priority || 'medium'
       mission.targetObjectId = data.targetObjectId || ''
       mission.targetRoom = data.targetRoom || ''
-      
+      mission.chapterId = data.chapterId || ''
+      mission.storyContext = data.storyContext || ''
+      mission.actor = data.actor || ''
+      mission.consequence = data.consequence || ''
+
       if (data.evidenceRequired) {
-        data.evidenceRequired.forEach(req => mission.evidenceRequired.push(req))
+        data.evidenceRequired.forEach((req) => mission.evidenceRequired.push(req))
       }
 
       if (data.prerequisites) {
-        data.prerequisites.forEach(req => mission.prerequisites.push(req))
+        data.prerequisites.forEach((req) => mission.prerequisites.push(req))
       }
-      
+
       mission.createdAt = Date.now()
 
       this.state.missions.set(mission.id, mission)
@@ -89,7 +110,12 @@ export class StartMissionCommand extends Command<OfficeState> {
 }
 
 export class CompleteMissionCommand extends Command<OfficeState> {
-  execute({ client, missionId, compliance, justification }: {
+  execute({
+    client,
+    missionId,
+    compliance,
+    justification,
+  }: {
     client: any
     missionId: string
     compliance: 'compliant' | 'non-compliant' | 'partial'
@@ -122,40 +148,17 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     finding.auditorId = client?.sessionId || 'auditor'
     finding.createdAt = Date.now()
     finding.lastModified = Date.now()
-    
+
     // Link evidence from mission
-    mission.collectedEvidence.forEach(evId => finding.evidence.push(evId))
+    mission.collectedEvidence.forEach((evId) => finding.evidence.push(evId))
 
     this.state.findings.set(finding.id, finding)
 
     updateAuditSessionMetrics(this.state)
 
-    // Unlock next missions based on prerequisites
-    this.state.missions.forEach((m) => {
-      if (m.status === 'pending') {
-        // Check if all prerequisites are completed
-        const allPrereqsMet = m.prerequisites.every((prereqId) => {
-          const prereqMission = this.state.missions.get(prereqId)
-          return prereqMission && prereqMission.status === 'completed'
-        })
-
-        if (allPrereqsMet) {
-          m.status = 'in-progress'
-          
-          // Notification for new mission
-          console.log(`[Audit] Scenario progress: Next mission unlocked: ${m.name}`)
-          
-          // Add journal entry for unlock
-          const unlockEntry = new JournalEntrySchema()
-          unlockEntry.id = uuid()
-          unlockEntry.timestamp = Date.now()
-          unlockEntry.auditorId = 'system'
-          unlockEntry.action = `Mission Unlocked: ${m.name}`
-          unlockEntry.type = 'mission_started'
-          this.state.journal.push(unlockEntry)
-        }
-      }
-    })
+    unlockMissionsForCurrentChapter(this.state)
+    progressStoryIfChapterCompleted(this.state, missionId)
+    finalizeCampaignIfCompleted(this.state)
 
     // Add journal entry
     const journalEntry = new JournalEntrySchema()
@@ -171,8 +174,144 @@ export class CompleteMissionCommand extends Command<OfficeState> {
   }
 }
 
+function areMissionPrerequisitesMet(state: OfficeState, mission: MissionSchema): boolean {
+  return mission.prerequisites.every((prereqId) => {
+    const prereqMission = state.missions.get(prereqId)
+    return prereqMission && prereqMission.status === 'completed'
+  })
+}
+
+function unlockMissionsForCurrentChapter(state: OfficeState): void {
+  const currentChapterId = state.auditSession?.currentChapterId
+  state.missions.forEach((mission) => {
+    if (mission.status !== 'pending') return
+    if (currentChapterId && mission.chapterId !== currentChapterId) return
+    if (!areMissionPrerequisitesMet(state, mission)) return
+
+    mission.status = 'in-progress'
+
+    const unlockEntry = new JournalEntrySchema()
+    unlockEntry.id = uuid()
+    unlockEntry.timestamp = Date.now()
+    unlockEntry.auditorId = 'system'
+    unlockEntry.action = `Mission Unlocked: ${mission.name}`
+    unlockEntry.type = 'mission_started'
+    state.journal.push(unlockEntry)
+  })
+}
+
+function progressStoryIfChapterCompleted(state: OfficeState, completedMissionId: string): void {
+  const completedMission = state.missions.get(completedMissionId)
+  if (!completedMission || !completedMission.chapterId || !state.auditSession) return
+
+  const currentChapterId = state.auditSession.currentChapterId || completedMission.chapterId
+  const chapterOrderMap = new Map(STORY_CHAPTERS.map((chapter) => [chapter.id, chapter.order]))
+  const currentOrder = chapterOrderMap.get(currentChapterId)
+
+  if (!currentOrder) return
+
+  let chapterMissionCount = 0
+  let chapterCompletedCount = 0
+  let chapterEvidenceCount = 0
+
+  state.missions.forEach((mission) => {
+    if (mission.chapterId !== currentChapterId) return
+    chapterMissionCount++
+    chapterEvidenceCount += mission.collectedEvidence.length
+    if (mission.status === 'completed') chapterCompletedCount++
+  })
+
+  if (chapterMissionCount === 0 || chapterCompletedCount !== chapterMissionCount) {
+    return
+  }
+
+  const nextChapter = STORY_CHAPTERS.find((chapter) => chapter.order === currentOrder + 1)
+  if (!nextChapter) return
+
+  state.auditSession.currentChapterId = nextChapter.id
+  state.auditSession.currentChapterTitle = nextChapter.title
+  state.auditSession.currentChapterOrder = nextChapter.order
+
+  unlockMissionsForCurrentChapter(state)
+
+  const transitionEntry = new JournalEntrySchema()
+  transitionEntry.id = uuid()
+  transitionEntry.timestamp = Date.now()
+  transitionEntry.auditorId = 'system'
+  transitionEntry.action = `Chapter Transition: ${nextChapter.title}`
+  transitionEntry.details = `Previous chapter completed (${chapterCompletedCount}/${chapterMissionCount} missions, ${chapterEvidenceCount} evidence collected).`
+  transitionEntry.type = 'chapter_transition'
+  state.journal.push(transitionEntry)
+
+  const notification = new NotificationSchema()
+  notification.id = uuid()
+  notification.timestamp = Date.now()
+  notification.type = 'info'
+  notification.title = `Chapter ${nextChapter.order} Unlocked`
+  notification.message = `Next objective: ${nextChapter.summary}`
+  state.notifications.push(notification)
+}
+
+function finalizeCampaignIfCompleted(state: OfficeState): void {
+  if (!state.auditSession) return
+  if (state.auditSession.status === 'completed' && state.auditSession.campaignConclusion) return
+
+  const totalMissions = state.missions.size
+  if (totalMissions === 0) return
+
+  let completedMissions = 0
+  state.missions.forEach((mission) => {
+    if (mission.status === 'completed') completedMissions++
+  })
+
+  if (completedMissions !== totalMissions) return
+
+  state.auditSession.status = 'completed'
+  state.auditSession.endTime = Date.now()
+
+  const score = state.auditSession.totalScore || 0
+  if (score >= 80) {
+    state.auditSession.campaignResult = 'pass'
+    state.auditSession.campaignConclusion =
+      'The audit team delivered a robust evidence trail and demonstrated strong control maturity before external certification.'
+  } else if (score >= 55) {
+    state.auditSession.campaignResult = 'warning'
+    state.auditSession.campaignConclusion =
+      'The audit identified meaningful control gaps. The organization can progress, but corrective actions are required before certification confidence is acceptable.'
+  } else {
+    state.auditSession.campaignResult = 'fail'
+    state.auditSession.campaignConclusion =
+      'Critical weaknesses remain unresolved. Leadership must execute urgent remediation before the external review can be considered safe.'
+  }
+
+  const endEntry = new JournalEntrySchema()
+  endEntry.id = uuid()
+  endEntry.timestamp = Date.now()
+  endEntry.auditorId = 'system'
+  endEntry.action = 'Campaign Completed'
+  endEntry.details = `Final score: ${score}/100. ${state.auditSession.campaignConclusion}`
+  endEntry.type = 'campaign_completed'
+  state.journal.push(endEntry)
+
+  const notification = new NotificationSchema()
+  notification.id = uuid()
+  notification.timestamp = Date.now()
+  notification.type = score >= 80 ? 'success' : score >= 55 ? 'warning' : 'error'
+  notification.title = 'Audit Campaign Completed'
+  notification.message = `Final score ${score}/100. Review the campaign conclusion in Overview.`
+  state.notifications.push(notification)
+}
+
 export class UpdateMissionStatusCommand extends Command<OfficeState> {
-  execute({ client, missionId, status }: { client: any; missionId: string; status: 'pending' | 'in-progress' | 'completed' }) {
+  execute({
+    client,
+    missionId,
+    status,
+  }: {
+    client: any
+    missionId: string
+    status: 'pending' | 'in-progress' | 'completed'
+  }) {
     const player = client ? this.state.players.get(client.sessionId) : undefined
     if (!player || !canPerformAction(player.role, 'start_mission')) {
       console.error(`Unauthorized mission status update by ${client?.sessionId || 'unknown'}`)
@@ -194,7 +333,11 @@ export class UpdateMissionStatusCommand extends Command<OfficeState> {
  */
 function generateEvidenceRequirements(controlId: string): string[] {
   const requirements: Record<string, string[]> = {
-    'A.5.1': ['Information Security Policy Document', 'Policy Approval Records', 'Distribution Evidence'],
+    'A.5.1': [
+      'Information Security Policy Document',
+      'Policy Approval Records',
+      'Distribution Evidence',
+    ],
     'A.6.1': ['Organizational Chart', 'Role Definitions', 'Responsibility Matrix'],
     'A.7.1': ['Physical Access Log', 'Access Card Records', 'Security Incident Reports'],
     'A.8.1': ['Operations Procedures Document', 'Change Management Log', 'Incident Response Plan'],

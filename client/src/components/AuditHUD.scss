@@ -825,3 +825,371 @@
     background: var(--scroll-thumb-hover);
   }
 }
+
+/* SHARED TAB CONTENT */
+.audit-hud {
+  .audit-tab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: var(--text-main);
+  }
+
+  .tab-header,
+  .panel-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tab-title,
+  .card-title,
+  .panel-title,
+  .section-title,
+  .finding-label,
+  .risk-label,
+  .mission-label,
+  .stat-label,
+  .pixel-label {
+    color: var(--text-accent);
+    text-shadow: 2px 2px 0px var(--ink);
+  }
+
+  .tab-title,
+  .card-title {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .audit-tab-content,
+  .mission-card__content,
+  .finding-card-content,
+  .risk-card-content {
+    font-family: 'Press Start 2P', cursive !important;
+  }
+
+  .pixel-card,
+  .summary-card,
+  .stat-card,
+  .finding-card,
+  .risk-card,
+  .mission-card,
+  .empty-panel-state {
+    background: var(--bg-card);
+    border: 4px solid var(--ink);
+    box-shadow: 4px 4px 0px var(--ink);
+  }
+
+  .empty-panel-state {
+    padding: 24px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    font-size: 11px;
+  }
+
+  .summary-card,
+  .stat-card,
+  .pixel-card {
+    padding: 14px;
+  }
+
+  .stats-grid,
+  .summary-grid,
+  .risk-progress-container,
+  .mission-chips,
+  .evidence-chips,
+  .risk-footer-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .stats-grid,
+  .summary-grid,
+  .risk-footer-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .risk-progress-container,
+  .mission-chips,
+  .evidence-chips {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-label {
+    font-size: 8px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .stat-value,
+  .summary-count,
+  .risk-value,
+  .time-stamp,
+  .auditor-id,
+  .mission-card__control,
+  .mission-card__status-badge,
+  .risk-id {
+    font-size: 9px;
+    line-height: 1.6;
+  }
+
+  .stat-value {
+    font-size: 20px;
+    line-height: 1.2;
+    color: var(--text-main);
+
+    &.compliant,
+    &.pass {
+      color: var(--success);
+    }
+    &.partial {
+      color: var(--warning);
+    }
+    &.non-compliant,
+    &.fail {
+      color: var(--danger);
+    }
+  }
+
+  .pixel-table-container {
+    overflow: auto;
+    border: 4px solid var(--ink);
+    box-shadow: 4px 4px 0px var(--ink);
+    background: var(--bg-card);
+  }
+
+  .pixel-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+
+    th {
+      background: var(--table-head-bg);
+      color: var(--text-accent);
+      padding: 12px;
+      text-align: left;
+      font-size: 9px;
+      line-height: 1.6;
+      border-bottom: 4px solid var(--ink);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-main);
+      color: var(--text-main);
+      vertical-align: top;
+      line-height: 1.7;
+      font-size: 11px;
+      text-transform: none;
+    }
+
+    tr:nth-child(even) {
+      background: var(--row-alt-bg);
+    }
+  }
+
+  .mission-card__content,
+  .finding-card-content,
+  .risk-card-content {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 4px solid var(--ink);
+  }
+
+  .mission-section,
+  .finding-section,
+  .risk-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mission-label,
+  .finding-label,
+  .risk-label {
+    font-size: 8px;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  .mission-text,
+  .finding-text,
+  .risk-text,
+  .evidence-desc,
+  .evidence-notes {
+    font-family: 'Courier New', monospace !important;
+    font-size: 11px;
+    line-height: 1.6;
+    text-transform: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    color: var(--text-main);
+  }
+
+  .finding-text.briefing-card,
+  .risk-text.briefing-card,
+  .mission-text.note-box {
+    background: var(--panel-deep-bg);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0px var(--ink);
+    padding: 10px 12px;
+  }
+
+  .mission-card__name,
+  .finding-mission,
+  .risk-summary-line {
+    font-family: 'Courier New', monospace !important;
+    font-size: 11px;
+    line-height: 1.7;
+    text-transform: none;
+    color: var(--text-main);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mission-card__name {
+    font-size: 12px;
+    color: var(--text-main);
+  }
+
+  .audit-journal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .journal-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .journal-entry {
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0px var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .entry-time,
+  .entry-action,
+  .entry-details {
+    font-family: 'Courier New', monospace !important;
+    text-transform: none;
+    color: var(--text-main);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .entry-time {
+    color: var(--text-accent);
+    font-size: 10px;
+  }
+
+  .entry-action {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .entry-details {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .finding-control,
+  .risk-id {
+    color: var(--text-accent);
+    text-transform: uppercase;
+  }
+
+  .time-stamp,
+  .auditor-id {
+    color: var(--text-muted);
+  }
+
+  .pixel-progress-bar {
+    width: 100%;
+    height: 14px;
+    background: var(--panel-deep-bg);
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0px var(--ink);
+    overflow: hidden;
+
+    &.large {
+      height: 18px;
+    }
+  }
+
+  .pixel-progress-fill {
+    height: 100%;
+    background: var(--success);
+  }
+
+  .risk-progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .risk-progress-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 9px;
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+
+  .finding-card-header,
+  .risk-card-header,
+  .mission-card__header {
+    background: transparent;
+  }
+
+  .finding-card-header,
+  .risk-card-header {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+  }
+
+  .finding-info,
+  .risk-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .finding-meta,
+  .risk-meta,
+  .mission-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .finding-card.expanded .finding-card-content,
+  .risk-card.expanded .risk-card-content,
+  .mission-card.expanded .mission-card__content {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}

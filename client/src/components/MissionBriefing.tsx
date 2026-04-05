@@ -24,13 +24,21 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
     onStart()
   }
 
+  const collectedEvidenceCount = Array.isArray(mission.collectedEvidence)
+    ? mission.collectedEvidence.length
+    : mission.evidenceCollected || 0
+
   const completionPercentage = mission.evidenceRequired?.length
-    ? ((mission.collectedEvidence?.length || 0) / mission.evidenceRequired.length) * 100
+    ? (collectedEvidenceCount / mission.evidenceRequired.length) * 100
     : 0
 
   const chapter = STORY_CHAPTERS.find((item) => item.id === mission.chapterId)
 
   const themeClass = backgroundMode === BackgroundMode.DAY ? 'theme-day' : 'theme-night'
+
+  const controlId = mission.isoControl || mission.controlId || 'N/A'
+  const missionTitle = mission.name || mission.title || 'Untitled Mission'
+  const missionZone = mission.zone || mission.category || mission.targetRoom || 'Office Area'
 
   return (
     <div className={`audit-hud mission-briefing-overlay ${themeClass}`}>
@@ -45,14 +53,14 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
         <div className="audit-hud__content">
           <div className="mission-briefing-body">
             <div className="briefing-section">
-              <div className="briefing-control-badge">ISO {mission.isoControl}</div>
+              <div className="briefing-control-badge">ISO {controlId}</div>
               <div className="briefing-label">{STORY_COMPANY.name}</div>
               {chapter && (
                 <div className="briefing-label">
                   Chapter {chapter.order}: {chapter.title}
                 </div>
               )}
-              <h2 className="briefing-title">{mission.name}</h2>
+              <h2 className="briefing-title">{missionTitle}</h2>
             </div>
 
             <div className="briefing-card">
@@ -66,7 +74,7 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
             <div className="briefing-grid">
               <div className="briefing-stat">
                 <div className="briefing-label">Location</div>
-                <div className="briefing-value">{mission.zone || 'Office Area'}</div>
+                <div className="briefing-value">{missionZone}</div>
                 <div className="briefing-label" style={{ marginTop: '8px' }}>
                   Actor
                 </div>
@@ -82,8 +90,7 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
 
             <div className="briefing-section">
               <div className="briefing-label">
-                Evidence Required ({mission.collectedEvidence?.length || 0}/
-                {mission.evidenceRequired?.length || 0})
+                Evidence Required ({collectedEvidenceCount}/{mission.evidenceRequired?.length || 0})
               </div>
               <div className="pixel-progress-bar large">
                 <div

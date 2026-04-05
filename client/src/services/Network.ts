@@ -39,6 +39,8 @@ import {
   addFinding,
   addRiskAssessment,
   updateAuditScore,
+  addNotificationToState,
+  syncAuditSessionMeta,
 } from '../stores/AuditStore'
 
 export default class Network {
@@ -120,9 +122,36 @@ export default class Network {
             sessionId: session.sessionId,
             status: session.status as any,
             startDate: new Date(session.startTime).toISOString(),
+            currentChapterId: session.currentChapterId,
+            currentChapterTitle: session.currentChapterTitle,
+            currentChapterOrder: session.currentChapterOrder,
+            campaignResult: session.campaignResult,
+            campaignConclusion: session.campaignConclusion,
           })
         )
         store.dispatch(updateAuditScore(session.totalScore ?? 100))
+
+        const syncSessionMeta = () => {
+          store.dispatch(updateAuditScore(session.totalScore ?? 100))
+          store.dispatch(
+            syncAuditSessionMeta({
+              status: session.status as any,
+              currentChapterId: session.currentChapterId,
+              currentChapterTitle: session.currentChapterTitle,
+              currentChapterOrder: session.currentChapterOrder,
+              campaignResult: session.campaignResult as any,
+              campaignConclusion: session.campaignConclusion,
+            })
+          )
+        }
+
+        // Keep chapter and campaign progression synchronized live.
+        ;(currentValue as any).onChange = () => {
+          syncSessionMeta()
+        }
+
+        syncSessionMeta()
+
         // Trigger marker update once session is loaded
         phaserEvents.emit(Event.UPDATE_AUDIT_STATE)
       }
@@ -146,6 +175,10 @@ export default class Network {
           dueDate: '',
           targetObjectId: mission.targetObjectId,
           targetRoom: mission.targetRoom,
+          chapterId: mission.chapterId,
+          storyContext: mission.storyContext,
+          actor: mission.actor,
+          consequence: mission.consequence,
         })
       )
 
@@ -245,6 +278,20 @@ export default class Network {
           details: entry.details,
           missionId: entry.missionId,
           type: entry.type as any,
+        })
+      )
+    }
+
+    this.room.state.notifications.onAdd = (notification) => {
+      store.dispatch(
+        addNotificationToState({
+          id: notification.id,
+          timestamp: notification.timestamp,
+          type: notification.type as any,
+          title: notification.title,
+          message: notification.message,
+          action: notification.action,
+          actionUrl: notification.actionUrl,
         })
       )
     }

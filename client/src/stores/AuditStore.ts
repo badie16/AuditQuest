@@ -31,6 +31,11 @@ const initialState: AuditState = {
   complianceDialogOpen: false,
   selectedMissionId: '',
   activeTab: 'overview',
+  currentChapterId: '',
+  currentChapterTitle: '',
+  currentChapterOrder: 0,
+  campaignResult: 'warning',
+  campaignConclusion: '',
 }
 
 const auditSlice = createSlice({
@@ -73,6 +78,11 @@ const auditSlice = createSlice({
         startDate?: string
         endDate?: string
         missions?: AuditMission[]
+        currentChapterId?: string
+        currentChapterTitle?: string
+        currentChapterOrder?: number
+        campaignResult?: 'pass' | 'warning' | 'fail'
+        campaignConclusion?: string
       }>
     ) => {
       state.sessionId = action.payload.sessionId
@@ -87,6 +97,44 @@ const auditSlice = createSlice({
       // Don't reset score/progress if session is already initialized
       if (!state.auditScore) state.auditScore = 100
       if (!state.progressPercentage) state.progressPercentage = 0
+      state.currentChapterId = action.payload.currentChapterId || state.currentChapterId || ''
+      state.currentChapterTitle =
+        action.payload.currentChapterTitle || state.currentChapterTitle || ''
+      state.currentChapterOrder =
+        action.payload.currentChapterOrder || state.currentChapterOrder || 0
+      state.campaignResult = action.payload.campaignResult || state.campaignResult || 'warning'
+      state.campaignConclusion = action.payload.campaignConclusion || state.campaignConclusion || ''
+    },
+
+    syncAuditSessionMeta: (
+      state,
+      action: PayloadAction<{
+        status?: AuditStatus
+        currentChapterId?: string
+        currentChapterTitle?: string
+        currentChapterOrder?: number
+        campaignResult?: 'pass' | 'warning' | 'fail'
+        campaignConclusion?: string
+      }>
+    ) => {
+      if (action.payload.status) {
+        state.status = action.payload.status
+      }
+      if (typeof action.payload.currentChapterId === 'string') {
+        state.currentChapterId = action.payload.currentChapterId
+      }
+      if (typeof action.payload.currentChapterTitle === 'string') {
+        state.currentChapterTitle = action.payload.currentChapterTitle
+      }
+      if (typeof action.payload.currentChapterOrder === 'number') {
+        state.currentChapterOrder = action.payload.currentChapterOrder
+      }
+      if (action.payload.campaignResult) {
+        state.campaignResult = action.payload.campaignResult
+      }
+      if (typeof action.payload.campaignConclusion === 'string') {
+        state.campaignConclusion = action.payload.campaignConclusion
+      }
     },
 
     completeAuditSession: (state) => {
@@ -398,6 +446,7 @@ export const {
   toggleAuditHUD,
   setActiveTab,
   addMission,
+  syncAuditSessionMeta,
   openEvidenceDialog,
   closeEvidenceDialog,
 } = auditSlice.actions
