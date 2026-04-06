@@ -442,7 +442,7 @@ export default class Game extends Phaser.Scene {
     rt.clear()
 
     // draw dark overlay
-    rt.fill(0x000000, 0.9)
+    rt.fill(0x000000, 0.1)
 
     // create circular transparent hole around the player
     const graphics = this.add.graphics()
