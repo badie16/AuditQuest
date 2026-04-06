@@ -15,6 +15,8 @@ import FindingsTab from './FindingsTab'
 import RiskTab from './RiskTab'
 import AuditMissionPanel from './AuditMissionPanel'
 import FinalReportDialog from './FinalReportDialog'
+import EvidenceReviewDialog from './EvidenceReviewDialog'
+import { ClearDeskChallenge, PasswordPolicyGame, LogAnalysisGame } from './MiniGames'
 import {
   generateAuditReport,
   exportReportAsCSV,
@@ -34,6 +36,10 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
     'overview' | 'missions' | 'evidence' | 'findings' | 'risks' | 'journal'
   >('overview')
   const [showFinalReport, setShowFinalReport] = useState(false)
+  const [showEvidenceReview, setShowEvidenceReview] = useState(false)
+  const [activeMiniGame, setActiveMiniGame] = useState<
+    'clearDesk' | 'passwordPolicy' | 'logAnalysis' | null
+  >(null)
   const [autoOpenedReport, setAutoOpenedReport] = useState(false)
 
   const auditState = useSelector((state: RootState) => state.audit)
@@ -504,6 +510,49 @@ export const AuditHUD: React.FC<AuditHUDProps> = ({ isOpen, onClose, onMissionSe
         onDownloadCSV={handleDownloadCSV}
         onDownloadHTML={handleDownloadHTML}
       />
+
+      <EvidenceReviewDialog
+        open={showEvidenceReview}
+        onClose={() => setShowEvidenceReview(false)}
+        onVerifyEvidence={(evidenceId, verified) => {
+          // Backend integration: emit verification event
+          // TODO: Implement backend command to verify evidence
+        }}
+      />
+
+      {activeMiniGame === 'clearDesk' && (
+        <ClearDeskChallenge
+          onComplete={(success) => {
+            if (success) {
+              // Mark evidence collected for this mission
+              console.log('Clear Desk Challenge completed successfully!')
+            }
+          }}
+          onClose={() => setActiveMiniGame(null)}
+        />
+      )}
+
+      {activeMiniGame === 'passwordPolicy' && (
+        <PasswordPolicyGame
+          onComplete={(success) => {
+            if (success) {
+              console.log('Password Policy Game completed successfully!')
+            }
+          }}
+          onClose={() => setActiveMiniGame(null)}
+        />
+      )}
+
+      {activeMiniGame === 'logAnalysis' && (
+        <LogAnalysisGame
+          onComplete={(success) => {
+            if (success) {
+              console.log('Log Analysis Game completed successfully!')
+            }
+          }}
+          onClose={() => setActiveMiniGame(null)}
+        />
+      )}
     </div>
   )
 }

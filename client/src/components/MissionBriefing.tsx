@@ -36,9 +36,9 @@ export default function MissionBriefing({ open, mission, onClose, onStart }: Mis
 
   const themeClass = backgroundMode === BackgroundMode.DAY ? 'theme-day' : 'theme-night'
 
-  const controlId = mission.isoControl || mission.controlId || 'N/A'
-  const missionTitle = mission.name || mission.title || 'Untitled Mission'
-  const missionZone = mission.zone || mission.category || mission.targetRoom || 'Office Area'
+  const controlId = mission.controlId || 'N/A'
+  const missionTitle = mission.title || 'Untitled Mission'
+  const missionZone = mission.category || mission.targetRoom || 'Office Area'
 
   return (
     <div className={`audit-hud mission-briefing-overlay ${themeClass}`}>

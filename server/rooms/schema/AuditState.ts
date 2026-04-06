@@ -11,25 +11,28 @@ import {
 
 export class MissionSchema extends Schema implements AuditMission {
   @type('string') id = ''
-  @type('string') name = ''
+  @type('string') controlId = ''
+  @type('string') title = ''
   @type('string') description = ''
-  @type('string') isoControl = ''
-  @type('string') zone = ''
   @type('string') status: 'pending' | 'in-progress' | 'completed' = 'pending'
   @type(['string']) prerequisites = new ArraySchema<string>()
   @type(['string']) evidenceRequired = new ArraySchema<string>()
-  @type(['string']) collectedEvidence = new ArraySchema<string>()
+  @type(['string']) collectedEvidence = new ArraySchema<string>() // Track individual evidence items
+  @type('number') evidenceCollected = 0 // Computed count for display
+  @type('number') completionPercentage = 0
+  @type('string') assignedTo = ''
   @type('string') compliance?: 'compliant' | 'non-compliant' | 'partial'
   @type('string') justification?: string
   @type('string') priority: 'low' | 'medium' | 'high' = 'medium'
+  @type('string') category = ''
   @type('string') targetObjectId = ''
   @type('string') targetRoom = ''
   @type('string') chapterId = ''
   @type('string') storyContext = ''
   @type('string') actor = ''
   @type('string') consequence = ''
+  @type('string') dueDate = ''
   @type('number') createdAt = 0
-  @type('number') completedAt?: number
 }
 
 export class EvidenceSchema extends Schema implements Evidence {
@@ -63,7 +66,7 @@ export class RiskAssessmentSchema extends Schema implements RiskAssessment {
   @type('string') findingId = ''
   @type('string') probability: 'low' | 'medium' | 'high' = 'medium'
   @type('string') impact: 'low' | 'medium' | 'high' = 'medium'
-  @type('string') severity: 'low' | 'medium' | 'high' = 'medium'
+  @type('string') severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
   @type('string') recommendation = ''
   @type('number') remediationDue?: number
   @type('number') createdAt = 0

@@ -28,10 +28,10 @@ export class InitializeAuditMissionsCommand extends Command<OfficeState> {
     AUDIT_MISSIONS.forEach((data) => {
       const mission = new MissionSchema()
       mission.id = data.id || uuid()
-      mission.name = data.title || ''
+      mission.title = data.title || ''
       mission.description = data.description || ''
-      mission.isoControl = data.controlId || ''
-      mission.zone = data.category || 'office'
+      mission.controlId = data.controlId || ''
+      mission.category = data.category || 'general'
 
       const chapterOrder = chapterOrderMap.get(data.chapterId) || Number.MAX_SAFE_INTEGER
       const isFirstChapterMission = !!firstChapter && chapterOrder === firstChapter.order
@@ -100,8 +100,8 @@ export class StartMissionCommand extends Command<OfficeState> {
     journalEntry.id = uuid()
     journalEntry.timestamp = Date.now()
     journalEntry.auditorId = client?.sessionId || 'auditor'
-    journalEntry.action = `Started audit mission: ${mission.name}`
-    journalEntry.details = `ISO ${mission.isoControl}`
+    journalEntry.action = `Started audit mission: ${mission.title}`
+    journalEntry.details = `ISO ${mission.controlId}`
     journalEntry.missionId = missionId
     journalEntry.type = 'mission_started'
 
@@ -165,7 +165,7 @@ export class CompleteMissionCommand extends Command<OfficeState> {
     journalEntry.id = uuid()
     journalEntry.timestamp = Date.now()
     journalEntry.auditorId = client?.sessionId || 'auditor'
-    journalEntry.action = `Completed mission: ${mission.name}`
+    journalEntry.action = `Completed mission: ${mission.title}`
     journalEntry.details = `Compliance: ${compliance}`
     journalEntry.missionId = missionId
     journalEntry.type = 'mission_completed'
@@ -194,7 +194,7 @@ function unlockMissionsForCurrentChapter(state: OfficeState): void {
     unlockEntry.id = uuid()
     unlockEntry.timestamp = Date.now()
     unlockEntry.auditorId = 'system'
-    unlockEntry.action = `Mission Unlocked: ${mission.name}`
+    unlockEntry.action = `Mission Unlocked: ${mission.title}`
     unlockEntry.type = 'mission_started'
     state.journal.push(unlockEntry)
   })

@@ -58,12 +58,12 @@ export default function AuditMissionPanel() {
         <div className="mission-card__icon">{getStatusIcon(mission.status)}</div>
         <div className="mission-card__title-group">
           <div className="mission-card__meta">
-            <span className="mission-card__control">{mission.controlId || mission.isoControl}</span>
+            <span className="mission-card__control">{mission.controlId}</span>
             <span className={`mission-card__status-badge status-${mission.status}`}>
               {mission.status}
             </span>
           </div>
-          <div className="mission-card__name">{mission.title || mission.name}</div>
+          <div className="mission-card__name">{mission.title}</div>
         </div>
         <div className="mission-card__expand">
           <ExpandMoreIcon

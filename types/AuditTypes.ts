@@ -18,6 +18,7 @@ export interface AuditMission {
   prerequisites?: string[]
   evidenceRequired: string[]
   evidenceCollected: number
+  collectedEvidence?: string[] // List of evidence IDs (for server sync)
   completionPercentage: number
   assignedTo: string
   createdAt: string
@@ -280,15 +281,15 @@ export const AUDIT_SCORING = {
   CONTROL_COMPLIANT: 10,
   CONTROL_PARTIAL: 5,
   CONTROL_NON_COMPLIANT: 0,
-  PENALTY_CRITICAL_RISK: -4,
-  PENALTY_HIGH_RISK: -3,
-  PENALTY_MEDIUM_RISK: -2,
-  PENALTY_LOW_RISK: -1,
+  PENALTY_CRITICAL_RISK: -10, // Critical risks have severe impact
+  PENALTY_HIGH_RISK: -5, // High risks significantly reduce score
+  PENALTY_MEDIUM_RISK: -3, // Medium risks have moderate impact
+  PENALTY_LOW_RISK: -1, // Low risks have minimal impact
   MAX_SCORE: 100,
   MIN_SCORE: 0,
 }
 
-// Risk Matrix
+// Risk Matrix - determines severity based on probability * impact
 export const RISK_MATRIX = {
   low_low: 'low',
   low_medium: 'low',
@@ -298,5 +299,5 @@ export const RISK_MATRIX = {
   medium_high: 'high',
   high_low: 'medium',
   high_medium: 'high',
-  high_high: 'high',
+  high_high: 'critical', // Critical when both probability and impact are high
 } as Record<string, RiskLevel>
